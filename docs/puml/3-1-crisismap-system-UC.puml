@@ -1,0 +1,160 @@
+' ==============================================================================
+' 3-1-crisismap-system-UC_v1.puml
+'
+' Svrha:    Prikazuje tko i s kojim ciljem koristi sustav CrisisMap (građani,
+'           moderatori, koordinatori pomoći) te koje vanjske sustave sustav
+'           koristi. Interna logika, pohrana podataka i korisničko sučelje
+'           namjerno nisu obuhvaćeni (kasniji modeli).
+' Autor:    Vlado Sruk, kolegij Programsko inženjerstvo
+' AI:       Dijagram je izradio autor. AI je pomogao u reviziji i komentarima;
+'           autor ih je pregledao i odgovara za konačni sadržaj.
+' Zahtjevi: UC-01 do UC-10 (svaki slučaj uporabe ima ID za praćenje
+'           prema implementaciji i testovima)
+'
+' Diagram level: System Requirements
+' Diagram type:  Use Case Diagram
+' Version:       1.3
+' ==============================================================================
+
+@startuml
+title Sustav CrisisMap – slučajevi uporabe
+left to right direction
+
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam ArrowColor #212529
+
+skinparam actor {
+    BackgroundColor #F8F9FA
+    BorderColor #212529
+    BackgroundColor<<external system>> #FFF3CD
+    BorderColor<<external system>> #856404
+}
+
+skinparam usecase {
+    BackgroundColor #E7F1FF
+    BorderColor #0D6EFD
+}
+
+' ==============================================================================
+' Primarni akteri
+' ==============================================================================
+
+' Akteri su uloge, a ne stanja: nazivi ne sadrže "prijavljen" ni "anoniman".
+' Stanje prijave opisuje bilješka ispod aktera Posjetitelj.
+actor User as "Korisnik aplikacije"
+actor Citizen as "Građanin"
+actor Visitor as "Posjetitelj"
+actor Moderator as "Moderator"
+actor Manager as "Koordinator pomoći"
+
+' Sve uloge su specijalizacije korisnika aplikacije, pa im je pregled karte
+' dostupan bez dodatne veze.
+Citizen -|> User
+ User -|>  Visitor
+Moderator -|> User
+Manager -|> User
+
+' Samo za raspored na dijagramu.
+Manager -[hidden]down-> Citizen
+Moderator -[hidden]down-> Citizen
+Citizen -[hidden]down-> Visitor
+Visitor -[hidden]down->  User
+
+'note left of Visitor
+'  Posjetitelj nije prijavljen u sustav.
+'  Prijavom (UC-01) postaje Građanin.
+'  Ne može podnijeti prijavu događaja (UC-04).
+'  Ostale uloge pretpostavljaju prijavu.
+'end note
+
+' ==============================================================================
+' Sekundarni akteri (vanjski sustavi)
+' ==============================================================================
+
+actor "Pružatelj identiteta\n(OAuth)" as IdP <<external system>>
+actor "Pružatelj obavijesti" as Notifications <<external system>>
+actor "Pružatelj kartografske\nusluge" as Maps <<external system>>
+
+' ==============================================================================
+' Granica sustava
+' ==============================================================================
+
+rectangle "Sustav CrisisMap" as CrisisMap {
+
+    ' Pristup
+    (UC-01\nPrijava u sustav) as UC_SignIn
+
+    ' Prijave i karta
+    (UC-02\nPregled prijava na karti) as UC_Map
+    (UC-03\nFiltriranje prikaza događaja) as UC_Filter
+    (UC-04\nPodnošenje prijave\nkriznog događaja) as UC_Report
+    (UC-05\nProvjera podataka prijave) as UC_ValidateReport
+    (UC-06\nDodavanje fotografije) as UC_UploadPhoto
+    (UC-07\nModeriranje prijave\nkriznog događaja) as UC_Moderate
+
+    ' Koordinacija resursa
+    (UC-08\nPregled dostupnih resursa) as UC_Resources
+    (UC-09\nRaspodjela resursa pomoći) as UC_Allocate
+
+    ' Obavijesti
+    (UC-10\nPrimanje obavijesti o\ndogađajima u blizini) as UC_Alert
+}
+
+' ==============================================================================
+' Asocijacije aktera i slučajeva uporabe
+' ==============================================================================
+
+User -- UC_Map
+
+' Posjetitelj namjerno NEMA vezu s UC-04: podnošenje prijave događaja traži
+' prijavu u sustav jer prijava u ERD-u (4-2) ima obvezan user_id. Posjetitelj
+' može samo pregledavati kartu i prijaviti se.
+Visitor -- UC_SignIn
+
+' Moderator i koordinator prijavljuju se istim postupkom. Uloga im se
+' dodjeljuje izvan ovog modela (administracija korisnika nije u opsegu).
+Moderator -- UC_SignIn
+Manager -- UC_SignIn
+
+Citizen -- UC_Report
+Citizen -- UC_Alert
+
+Moderator -- UC_Moderate
+
+Manager -- UC_Resources
+Manager -- UC_Allocate
+
+' ==============================================================================
+' Veze između slučajeva uporabe
+' ==============================================================================
+
+' Neobavezno ponašanje koje proširuje potpuni osnovni slučaj.
+UC_Map <.. UC_Filter : <<extend>>\n[filtriranje zatraženo]
+
+UC_Report <.. UC_UploadPhoto : <<extend>>\n[fotografija priložena]
+
+' Obvezno ponašanje koje se uvijek izvodi pri podnošenju prijave.
+UC_Report ..> UC_ValidateReport : <<include>>
+
+' Prijava namjerno NIJE <<include>> zaštićenih slučajeva (UC-04, UC-07,
+' UC-08, UC-09, UC-10): korisnik je već prijavljen prije njihova početka.
+' Prijava je preduvjet, a <<include>> bi bio ispravan tek da se uvijek
+' izvodi unutar samog slučaja.
+
+' ==============================================================================
+' Interakcije sa sekundarnim akterima
+' ==============================================================================
+
+UC_SignIn -- IdP
+
+' Kartografska usluga je prikazana jer je ključna vanjska ovisnost. U strožem
+' modelu usmjerenom na ciljeve pojavila bi se tek u arhitekturnom prikazu.
+UC_Map -right- Maps
+
+UC_Alert -right- Notifications
+
+' Samo za raspored vanjskih sustava u jednom stupcu.
+Maps -[hidden]left-> IdP 
+Maps -[hidden]down-> Notifications
+@enduml

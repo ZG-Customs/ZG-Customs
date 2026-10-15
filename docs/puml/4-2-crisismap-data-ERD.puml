@@ -1,0 +1,133 @@
+' ==============================================================================
+' 4-2-crisismap-data-ERD.puml 
+'
+' Svrha:    Prikazuje trajne entitete sustava CrisisMap (korisnik, prijava,
+'           kategorija, fotografija, resurs, raspodjela, pretplata na
+'           obavijesti), njihove ključeve, reprezentativne atribute i
+'           kardinalnosti. Fizička implementacija baze nije obuhvaćena.
+' Autor:    Vlado Sruk, kolegij Programsko inženjerstvo
+' AI:       Dijagram je izradio autor. AI je pomogao u reviziji i komentarima;
+'           autor ih je pregledao i odgovara za konačni sadržaj.
+' Praćenje: Entiteti, atributi i veze trebaju ostati usklađeni sa shemom baze;
+'           pri promjeni sheme ažurirati model.
+'
+' Diagram level: Logical data model
+' Diagram type:  Entity-Relationship Diagram (ERD), crow's foot
+' Version:       1.3
+' ==============================================================================
+
+@startuml
+title Sustav CrisisMap – logički podatkovni model
+left to right direction
+
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam ArrowColor #212529
+
+skinparam entity {
+    BackgroundColor #E7F1FF
+    BorderColor #0D6EFD
+    FontColor #212529
+}
+
+' ==============================================================================
+' Korisnik
+' ==============================================================================
+
+entity "Korisnik" as User {
+    * user_id : ID <<PK>>
+    --
+    display_name : text
+    role : enum
+}
+
+' ==============================================================================
+' Prijave kriznih događaja
+' ==============================================================================
+
+entity "Prijava kriznog događaja" as Report {
+    * report_id : ID <<PK>>
+    --
+    * user_id : ID <<FK>>
+    * category_id : ID <<FK>>
+    description : text
+    severity : enum
+    status : enum
+    latitude : decimal
+    longitude : decimal
+    submitted_at : datetime
+}
+
+entity "Kategorija kriznog događaja" as Category {
+    * category_id : ID <<PK>>
+    --
+    name : text
+}
+
+entity "Fotografija prijave" as Photo {
+    * photo_id : ID <<PK>>
+    --
+    * report_id : ID <<FK>>
+    url : text
+}
+
+' ==============================================================================
+' Resursi
+' ==============================================================================
+
+entity "Resurs" as Resource {
+    * resource_id : ID <<PK>>
+    --
+    * resource_type_id : ID <<FK>>
+    name : text
+    quantity : integer
+    status : enum
+}
+
+entity "Vrsta resursa" as ResourceType {
+    * resource_type_id : ID <<PK>>
+    --
+    name : text
+}
+
+' Raspodjela je asocijativni entitet između prijave i resursa: jedna prijava
+' može zahtijevati više resursa, a isti se resurs može dodijeliti više puta.
+' Količina se bilježi na samoj vezi.
+entity "Raspodjela resursa" as Allocation {
+    * allocation_id : ID <<PK>>
+    --
+    * report_id : ID <<FK>>
+    * resource_id : ID <<FK>>
+    allocated_quantity : integer
+    allocated_at : datetime
+}
+
+' ==============================================================================
+' Pretplata na obavijesti
+' ==============================================================================
+
+entity "Pretplata na obavijesti" as Subscription {
+    * subscription_id : ID <<PK>>
+    --
+    * user_id : ID <<FK>>
+    latitude : decimal
+    longitude : decimal
+    radius_km : decimal
+    enabled : boolean
+}
+
+' ==============================================================================
+' Veze između entiteta
+' ==============================================================================
+
+User ||--o{ Report : podnosi ►
+Category ||--o{ Report : kategorizira ►
+Report ||--o{ Photo : ima ►
+
+ResourceType ||--o{ Resource : grupira ►
+
+Report ||--o{ Allocation : zahtijeva ►
+Resource ||--o{ Allocation : dodjeljuje se ►
+
+User ||--o{ Subscription : postavlja ►
+@enduml

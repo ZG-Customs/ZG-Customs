@@ -1,0 +1,120 @@
+' ==============================================================================
+' 6-1-crisismap-DD_v1.puml
+'
+' Svrha:    Prikazuje čvorove na platformi Render, razmještene artefakte,
+'           komunikacijske putove (HTTPS/TCP) i odabrane konfiguracijske
+'           vrijednosti uz artefakte na koje se odnose. Razlikuje javne putove
+'           od interne veze s bazom. Ne predstavlja potpunu specifikaciju
+'           konfiguracije niti dokaz sigurnosti sustava.
+' Autor:    Vlado Sruk, kolegij Programsko inženjerstvo / projektna dokumentacija
+' AI:       AI je pomogao u UML formalizaciji i komentarima; autor je sve
+'           provjerio i izmijenio te odgovara za arhitekturnu logiku.
+' Praćenje: Portovi, protokoli, veze razmještaja i konfiguracijske vrijednosti
+'           trebaju odgovarati stvarnoj konfiguraciji; pri promjeni produkcijske
+'           topologije ažurirati model.
+'
+' Diagram level: Physical Deployment Architecture
+' Diagram type:  Deployment Diagram
+' Version:       1.3
+' ==============================================================================
+
+@startuml
+title Sustav CrisisMap – razmještaj na platformi Render
+
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam ArrowColor #212529
+
+skinparam node {
+    BackgroundColor #FFFFFF
+    BorderColor #212529
+}
+
+skinparam cloud {
+    BackgroundColor #F8F9FA
+    BorderColor #212529
+}
+
+skinparam artifact {
+    BackgroundColor #E7F1FF
+    BorderColor #0D6EFD
+}
+
+skinparam database {
+    BackgroundColor #FFF3CD
+    BorderColor #212529
+}
+
+skinparam note {
+    BackgroundColor #F8F9FA
+    BorderColor #212529
+    FontColor #212529
+}
+
+' ==============================================================================
+' Čvorovi, okruženja i razmješteni artefakti
+' ==============================================================================
+node "Korisnički uređaj" as Device <<device>> {
+  node "Web-preglednik" as Browser <<executionEnvironment>>
+}
+
+cloud "Platforma Render" as Render {
+
+  node "Okruženje statičkog web-mjesta" as Static <<executionEnvironment>> {
+    artifact "Izgrađeni web-klijent" as Frontend <<artifact>>
+  }
+
+  note right of Frontend
+    Konfiguracija pri izgradnji:
+    VITE_API_BASE_URL određuje
+    javnu adresu poslužiteljskog API-ja.
+  end note
+
+  node "Poslužiteljska web-usluga" as Service <<executionEnvironment>> {
+    node "Izvršno okruženje Node.js" as NodeEngine <<executionEnvironment>> {
+      artifact "Poslužiteljska aplikacija" as Backend <<artifact>>
+    }
+
+    Backend ..> NodeEngine : <<deploy>>
+  }
+
+  note right of Backend
+    Varijabla okruženja DATABASE_URL
+    određuje internu vezu s bazom podataka.
+  end note
+
+  database "Upravljani PostgreSQL" as DB <<database>>
+}
+
+cloud "Vanjski pružatelji" as External {
+  node "Usluga kartografskih pločica" as Maps <<server>>
+  node "Firebase Cloud Messaging" as FCM <<server>>
+  node "Pružatelj identiteta (OAuth)" as IdP <<server>>
+}
+
+' ==============================================================================
+' Komunikacijski putovi (stvarni mrežni promet)
+' ==============================================================================
+
+' 1. Isporuka statičkih datoteka (javno)
+Browser -[#blue]-> Static : <<HTTPS : 443>> \n dohvat statičkih datoteka
+
+' 2. Javni API promet
+Browser -[#blue]-> Service : <<HTTPS : 443>> \n REST / JSON
+note on link
+  Usluga sluša na 0.0.0.0
+  na dinamičkom portu platforme Render.
+end note
+
+' 3. Interna veza s bazom
+Service -[#green,bold]-> DB : <<TCP/IP : 5432>> \n skup veza
+note on link
+  Koristi internu vezu s bazom platforme Render.
+  Nije izložena javnom internetu.
+end note
+
+' 4. Odlazni promet prema vanjskim pružateljima
+Service -[#darkorange]-> FCM : <<HTTPS : 443>> \n zahtjev za slanje obavijesti
+Browser -[#darkorange]-> Maps : <<HTTPS : 443>> \n dohvat kartografskih pločica
+Browser -[#darkorange]-> IdP : <<HTTPS : 443>> \n prijava u sustav
+@enduml
