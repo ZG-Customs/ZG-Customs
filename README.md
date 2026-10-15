@@ -1,4 +1,6 @@
-# Programsko inženjerstvo — FER-UNIZG
+# ZG Customs
+
+promijenit cemo ostatak...
 
 Dobro došli u središnji repozitorij kolegija **Programsko inženjerstvo** na Fakultetu elektrotehnike i računarstva Sveučilišta u Zagrebu.
 
