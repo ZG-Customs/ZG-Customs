@@ -69,7 +69,7 @@ Server ne treba privatni GitHub ključ ni GitHub token za čitanje ovog javnog r
 ## Provjere i postavljanje iz GitHuba
 
 1. Promjene se šalju na radnu granu i otvara se PR prema `main`.
-2. GitHub Actions workflow **CI** pokreće integracijske testove na zasebnom PostgreSQL-u, provjerava skripte i Compose te gradi Docker image.
+2. GitHub Actions workflow **CI** pokreće integracijske testove na zasebnom PostgreSQL-u, provjerava skripte i Compose, gradi Docker image te pokreće aplikaciju sa svježe inicijaliziranom bazom i provjerava API.
 3. Nakon pregleda i spajanja PR-a, CI se ponovno izvršava za točan commit na `main`.
 4. Server svakih pet minuta provjerava `main`. Postavlja samo commit s uspješno dovršenim CI workflowom iz ovog repozitorija, događaja `push`, za tu istu verziju koda.
 5. Server gradi image označen punim Git SHA-om, prije nadogradnje stvara kopiju postojeće baze i čeka da baza i backend budu zdravi. Tek tada zapisuje `current-sha`.

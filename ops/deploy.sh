@@ -14,7 +14,9 @@ git -C "$root/repo" cat-file -e "$revision^{commit}"
 release="$root/releases/$revision"
 if [[ ! -d "$release" ]]; then
   staging="$(mktemp -d "$root/releases/.staging-XXXXXX")"
-  git -C "$root/repo" archive "$revision" | tar -x -C "$staging"
+  # Tracked source files must remain readable by non-root container users.
+  # Secrets and deployment state retain the restrictive outer umask.
+  (umask 022; git -C "$root/repo" archive "$revision" | tar -x -C "$staging")
   mv "$staging" "$release"
 fi
 [[ -f "$release/compose.yaml" ]] || { echo 'Commit has no Compose configuration.' >&2; exit 2; }
