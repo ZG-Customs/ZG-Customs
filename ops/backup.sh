@@ -9,7 +9,7 @@ backup="$root/backups/$(date -u +%Y%m%dT%H%M%SZ)-${revision:0:12}.dump"
 export APP_VERSION="$revision"
 docker compose --project-name zg-customs --env-file "$root/.env" \
   -f "$root/releases/$revision/compose.yaml" \
-  exec -T postgres pg_dump -U postgres -d zg_customs --format=custom > "$backup.tmp"
+  exec -T --interactive=false postgres pg_dump -U postgres -d zg_customs --format=custom > "$backup.tmp"
 test -s "$backup.tmp"
 mv "$backup.tmp" "$backup"
 echo "Database backup created: $backup"

@@ -37,7 +37,7 @@ Detaljan opseg, zahtjevi, obrasci uporabe, arhitektura i rezultati ispitivanja v
 
 ## Postavljanje (deployment)
 
-**Status:** početni backend i baza pripremljeni su za Azure Ubuntu server. Pristup je kroz SSH tunel; javno korisničko sučelje još nije postavljeno.
+**Status:** početni backend i baza pokrenuti su na Azure Ubuntu serveru. Pristup je kroz SSH tunel; javno korisničko sučelje još nije postavljeno. Automatizacija je pripremljena za objavu prihvaćenih promjena iz `main` nakon uspješnog CI-ja.
 
 | Podatak | Trenutačno stanje |
 | --- | --- |

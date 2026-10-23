@@ -32,7 +32,7 @@ Za lokalni rad na Javi pokrenite samo `docker compose up -d postgres`, unesite `
 
 ## SSH pristup s Maca ili Windowsa
 
-Svaki član koristi vlastiti SSH ključ i račun kad mu se odobri pristup. Privatni ključevi se ne dijele. Za početni administratorski račun primjer veze je:
+Svaki član koristi vlastiti SSH ključ i račun kad mu se odobri pristup. Privatni ključevi se ne dijele. Priprema osobnih računa i dodavanje ključeva opisani su u [uputama za pristup članova tima](team-access.md). Za početni administratorski račun primjer veze je:
 
 ```bash
 ssh -i ~/.ssh/id_ed25519_ivanbartol ivanbartol@<SERVER_IP>
@@ -135,3 +135,9 @@ Pričekajte da `pg_isready` u testnom containeru potvrdi spremnost prije testova
 ## Preostalo za javnu aplikaciju
 
 Sljedeći koraci su frontend, domena i HTTPS reverse proxy, OIDC prijava i autorizacija, poslovne funkcionalnosti, vanjske integracije te kopije izvan servera. Trenutačni API nema korisničke podatke ni operacije pisanja i ostaje dostupan samo lokalno/SSH tunelom. Ovo postavljanje samo po sebi ne ispunjava sve zahtjeve prvog ciklusa projekta.
+
+## Provjera početnog postavljanja — 23. 10. 2026.
+
+Na Azure serveru provjereni su API i PostgreSQL kroz SSH tunel, aplikacijski korisnik bez superuser ovlasti, očuvanje novog probnog zapisa nakon ponovnog stvaranja PostgreSQL containera te obnova sigurnosne kopije u zasebnu testnu bazu. Probni zapis uklonjen je nakon provjere. Privatna `.env` datoteka ima ovlasti `600`.
+
+GitHub CI provjerava četiri backend integracijska testa, dva testa uvjeta automatske objave, shell skripte, izgradnju imagea te pokretanje cijele Compose konfiguracije sa svježom bazom. Uključen je cron za provjeru `main` grane svakih pet minuta i dnevnu kopiju u 03:30 UTC. Početna verzija ručno je postavljena iz infrastrukturne grane; prvo automatsko postavljanje nakon mergea tek treba potvrditi. Kopije se trenutačno čuvaju samo na serveru.
