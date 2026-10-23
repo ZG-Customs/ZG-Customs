@@ -1,0 +1,74 @@
+name: zg-customs
+
+services:
+  postgres:
+    image: postgres:18.6-bookworm
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: zg_customs
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Run scripts/init-env.sh first}
+      APP_DB_USER: zg_customs
+      APP_DB_PASSWORD: ${DB_PASSWORD:?Run scripts/init-env.sh first}
+    command: ["postgres", "-c", "max_connections=50", "-c", "shared_buffers=128MB"]
+    volumes:
+      - postgres_data:/var/lib/postgresql
+      - ./ops/postgres/init-app-user.sh:/docker-entrypoint-initdb.d/10-app-user.sh:ro
+    ports:
+      - "127.0.0.1:${DB_PORT:-5432}:5432"
+    networks: [data]
+    shm_size: 128mb
+    mem_limit: 768m
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d zg_customs"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  backend:
+    image: zg-customs-backend:${APP_VERSION:-local}
+    build:
+      context: ./backend
+      args:
+        APP_VERSION: ${APP_VERSION:-local}
+    restart: unless-stopped
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/zg_customs
+      DB_USER: zg_customs
+      DB_PASSWORD: ${DB_PASSWORD:?Run scripts/init-env.sh first}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:${API_PORT:-8080}:8080"
+    networks: [data, outbound]
+    mem_limit: 1g
+    read_only: true
+    tmpfs: [/tmp]
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:8080/actuator/health/readiness"]
+      interval: 15s
+      timeout: 5s
+      retries: 12
+      start_period: 60s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  postgres_data:
+
+networks:
+  data:
+    internal: true
+  outbound:

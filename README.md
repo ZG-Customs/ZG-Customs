@@ -4,7 +4,7 @@
 
 ZG Customs razvija šesteročlani studentski tim u sklopu kolegija [Programsko inženjerstvo](https://www.fer.unizg.hr/predmet/proinz) na Fakultetu elektrotehnike i računarstva Sveučilišta u Zagrebu, u akademskoj godini **2026./2027.** Projekt se temelji na zadanoj temi **AutoServis**, autorice Ede Jovičić.
 
-> **Status projekta:** početna faza razvoja. Uspostavljeni su repozitorij i struktura projekta prema predlošku kolegija. Funkcionalnosti opisane u nastavku predstavljaju planirani opseg; aplikacija još nema funkcionalnu inačicu za demonstraciju.
+> **Status projekta:** početna infrastruktura. Pripremljeni su Spring Boot backend, PostgreSQL, Docker Compose i CI provjere. API za vrste servisa služi provjeri veze s bazom. Ostale funkcionalnosti u nastavku predstavljaju planirani opseg.
 
 ## Opis aplikacije
 
@@ -37,12 +37,12 @@ Detaljan opseg, zahtjevi, obrasci uporabe, arhitektura i rezultati ispitivanja v
 
 ## Postavljanje (deployment)
 
-**Status:** aplikacija još nije javno postavljena.
+**Status:** početni backend i baza pripremljeni su za Azure Ubuntu server. Pristup je kroz SSH tunel; javno korisničko sučelje još nije postavljeno.
 
 | Podatak | Trenutačno stanje |
 | --- | --- |
 | Javni URL | **[DOPUNITI nakon prvog postavljanja]** |
-| Platforma za hosting | Predložen je DigitalOcean s Linux poslužiteljem; konačan odabir treba potvrditi s timom i asistenticom. |
+| Platforma za hosting | Microsoft Azure, Ubuntu 24.04 LTS i Docker Compose. |
 | Pristup demonstraciji | **[DOPUNITI: način prijave i pristup demonstracijskim ulogama]** |
 | Ograničenja postavljene inačice | **[DOPUNITI nakon prve funkcionalne inačice]** |
 
@@ -61,21 +61,22 @@ git clone git@github.com:ZG-Customs/ZG-Customs.git
 cd ZG-Customs
 ```
 
-Upute za pokretanje aplikacije bit će dodane nakon uspostave prvog funkcionalnog razvojnog okruženja. Postojeće ogledne datoteke iz predloška ne predstavljaju implementaciju ZG Customsa.
+Za pokretanje backenda i baze potreban je Docker s Composeom:
 
-| Stavka za dopunu | Sadržaj |
-| --- | --- |
-| Preduvjeti | **[DOPUNITI: potvrđene tehnologije, verzije i potrebni alati]** |
-| Instalacija ovisnosti i pokretanje | **[DOPUNITI: provjerene naredbe za backend, frontend i bazu podataka]** |
-| Konfiguracija | **[DOPUNITI: potrebne varijable okruženja i lokacija datoteke s oglednim vrijednostima]** |
-| Lokalna adresa aplikacije | **[DOPUNITI nakon prvog pokretanja]** |
-| Provjera rada i ispitivanje | **[DOPUNITI: osnovni korisnički tijek i naredbe za pokretanje stvarnih testova]** |
+```bash
+bash scripts/init-env.sh
+docker compose up -d --build --wait
+```
+
+API: `http://localhost:8080/api/service-types`. Provjera spremnosti: `http://localhost:8080/actuator/health/readiness`.
+
+[Upute za lokalni razvoj, Windows, SSH tunel, bazu i Azure postavljanje](docs/deployment.md) opisuju konfiguraciju, migracije, testiranje i nadogradnje. Za Java razvoj izvan containera koristi se Java 21 i uključeni Maven Wrapper. Frontend još nije implementiran.
 
 U repozitorij se ne pohranjuju lozinke, privatni SSH ključevi ni pristupni tokeni. Upute za konfiguraciju trebaju sadržavati nazive potrebnih varijabli i ogledne vrijednosti.
 
 ## Tehnologije
 
-Sljedeći skup tehnologija predstavlja **prijedlog za dogovor tima i asistentice**, a ne popis već implementiranih tehnologija. Nakon konačnog odabira ovaj odjeljak treba uskladiti sa stvarnim rješenjem.
+Početni backend i infrastruktura koriste Java 21 / Spring Boot 4.1.2, PostgreSQL 18.6, Docker Compose i Azure Ubuntu. React / TypeScript ostaje prijedlog za frontend. Tim treba uskladiti odabir i opseg s asistenticom.
 
 | Predložena tehnologija ili alat | Uloga u projektu | Razlog razmatranja |
 | --- | --- | --- |
@@ -83,8 +84,8 @@ Sljedeći skup tehnologija predstavlja **prijedlog za dogovor tima i asistentice
 | **React / TypeScript** | Korisničko sučelje za vlasnike vozila, zaposlenike autoservisa i administratora. | Omogućuje organizaciju obrazaca, popisa i prikaza statusa kroz ponovno uporabive komponente. |
 | **PostgreSQL** | Pohrana korisnika, vozila, autoservisa, zahtjeva i servisne povijesti. | Domenski podaci imaju jasne odnose i zahtijevaju dosljednost povezanih zapisa. |
 | **Docker / Docker Compose** | Ujednačeno pokretanje aplikacije i baze podataka. | Olakšava usklađivanje razvojnog okruženja članova tima i poslužitelja. |
-| **DigitalOcean / Linux** | Javno postavljanje aplikacije. | Omogućuje zasebno poslužiteljsko okruženje; tim treba preuzeti konfiguraciju i održavanje. |
-| **GitHub Actions** | Automatizirana izgradnja, provjere i kasnije postavljanje aplikacije. | Povezuje provjere s promjenama u repozitoriju; postojeće ogledne tijekove rada treba prilagoditi projektu. |
+| **Microsoft Azure / Ubuntu** | Javno postavljanje aplikacije. | Omogućuje zasebno poslužiteljsko okruženje; tim treba preuzeti konfiguraciju i održavanje. |
+| **GitHub Actions** | Automatizirana izgradnja, provjere i kasnije postavljanje aplikacije. | Provjerava backend na stvarnoj testnoj bazi i gradi container. Server postavlja odobreni `main` nakon uspješnog CI-ja. |
 
 **Vanjske integracije predviđene zadatkom:**
 
@@ -140,7 +141,7 @@ Kod trećih strana, slike, ikone i drugi uključeni sadržaji zadržavaju vlasti
 
 Pri radu na projektu primjenjuju se FER-ova [pravila o primjerenoj uporabi umjetne inteligencije](https://www.fer.unizg.hr/_download/repository/Policy%20on%20the%20appropriate%20use%20of%20artificial%20intelligence%20at%20the%20faculty%20of%20electrical%20engineering%20and%20computing%5B1%5D.pdf).
 
-**Dosadašnja uporaba:** OpenAI Codex korišten je kao pomoć pri razradi početnog plana projekta te izradi i uređivanju ovog README-a prema predlošku kolegija i zadatku AutoServis.
+**Dosadašnja uporaba:** OpenAI Codex korišten je kao pomoć pri razradi početnog plana, izradi README-a te pripremi početnog Spring Boot backenda, migracije baze, testova, Docker konfiguracije i skripti za Azure postavljanje. Tim treba pregledati kod i rezultate provjera prije prihvaćanja promjena.
 
 **Pregled tima:** **[DOPUNITI: tko je pregledao tekst, koje je provjere proveo i koje je izmjene unio]**. Tim prije objave treba provjeriti točnost opisa i usklađenost sa stvarnim stanjem projekta. Daljnja uporaba alata i provjera rezultata bilježit će se u [projektnoj dokumentaciji](docs/Home.md#izjava-o-uporabi-umjetne-inteligencije).
 
