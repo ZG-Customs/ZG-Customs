@@ -41,6 +41,7 @@ jobs:
       - name: Check deployment scripts
         run: |
           bash -n scripts/init-env.sh ops/deploy.sh ops/backup.sh ops/postgres/init-app-user.sh
+          shellcheck scripts/init-env.sh ops/deploy.sh ops/backup.sh ops/postgres/init-app-user.sh
           python3 -m py_compile ops/sync.py
           python3 -m unittest discover -s tests/deployment -v
       - name: Run backend integration tests against PostgreSQL

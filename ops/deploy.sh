@@ -30,16 +30,17 @@ trap on_exit EXIT
 
 export APP_VERSION="$revision"
 compose=(docker compose --project-name zg-customs --env-file "$root/.env" -f "$release/compose.yaml")
-"${compose[@]} config --quiet
-"${compose[@]} build --pull backend
+"${compose[@]}" config --quiet
+"${compose[@]}" build --pull backend
 
 if [[ -s "$root/state/current-sha" ]]; then
   ZG_DEPLOY_ROOT="$root" bash "$release/ops/backup.sh"
 fi
 
 # Never run down -v: the database volume must survive releases.
-"${compose[@]} up -d --no-build --wait --wait-timeout 240
-curl --fail --silent --show-error --max-time 10 http://127.0.0.1:8080/actuator/health/readiness
+"${compose[@]}" up -d --no-build --wait --wait-timeout 240
+api_address="$("${compose[@]}" port backend 8080)"
+curl --fail --silent --show-error --max-time 10 "http://$api_address/actuator/health/readiness"
 printf '%s\n' "$revision" > "$root/state/current-sha.tmp"
 mv "$root/state/current-sha.tmp" "$root/state/current-sha"
 rm -f "$root/state/failed-sha"
