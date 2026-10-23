@@ -60,6 +60,7 @@ jobs:
           API_PORT: '18080'
         run: |
           docker compose --project-name zg-customs-ci --env-file .env.example up -d --no-build --wait --wait-timeout 240
+          python3 -c 'import socket; socket.create_connection(("127.0.0.1", 55433), timeout=5).close()'
           curl --fail --silent --show-error http://127.0.0.1:18080/api/service-types | python3 -c 'import json, sys; assert len(json.load(sys.stdin)) == 4'
       - name: Clean up the disposable Compose environment
         if: always()

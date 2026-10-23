@@ -16,7 +16,7 @@ services:
       - ./ops/postgres/init-app-user.sh:/docker-entrypoint-initdb.d/10-app-user.sh:ro
     ports:
       - "127.0.0.1:${DB_PORT:-5432}:5432"
-    networks: [data]
+    networks: [app]
     shm_size: 128mb
     mem_limit: 768m
     healthcheck:
@@ -47,7 +47,7 @@ services:
         condition: service_healthy
     ports:
       - "127.0.0.1:${API_PORT:-8080}:8080"
-    networks: [data, outbound]
+    networks: [app]
     mem_limit: 1g
     read_only: true
     tmpfs: [/tmp]
@@ -69,6 +69,4 @@ volumes:
   postgres_data:
 
 networks:
-  data:
-    internal: true
-  outbound:
+  app: {}
