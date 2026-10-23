@@ -1,0 +1,26 @@
+{$SITE_ADDRESS} {
+    encode zstd gzip
+    header {
+        X-Content-Type-Options nosniff
+        Referrer-Policy strict-origin-when-cross-origin
+        X-Frame-Options DENY
+    }
+    handle /api/* {
+        reverse_proxy backend:8080
+    }
+    @management path /actuator /actuator/*
+    handle @management {
+        respond "Not found" 404
+    }
+    handle {
+        root * /srv
+        try_files {path} /index.html
+        header Cache-Control "no-cache"
+        file_server
+    }
+}
+
+# Container health check; this port is not published on the server.
+:8081 {
+    respond /healthz "ok" 200
+}

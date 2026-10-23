@@ -83,3 +83,15 @@ out
 
 # pnpm
 .pnpm-store
+
+# Java and local deployment data
+**/target/
+.idea/
+*.iml
+.DS_Store
+backups/
+releases/
+*.dump
+__pycache__/
+*.pyc
+frontend/dist/

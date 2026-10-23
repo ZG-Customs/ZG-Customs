@@ -1,3 +1,5 @@
+> **ZG Customs — trenutačne upute:** [Docker, PostgreSQL, SSH i Azure postavljanje](deployment.md). Nastavni primjeri u ostatku ove stranice još nisu prilagođeni projektu; primjeri s Renderom i Node.js-om ne opisuju trenutačnu infrastrukturu.
+
 # 6. Postavljanje, instalacija i konfiguracija
 
 **Cilj:** Detaljno dokumentirati topologiju izvođenja, postupak lokalne instalacije i konfiguracije iz izvornog koda te način javnog postavljanja i administracije programa. [README](../README.md) navodi javnu adresu i sažeti postupak lokalnog pokretanja; ova stranica donosi potpun inženjerski postupak koji osigurava točnu ponovljivost na drugom računalu.

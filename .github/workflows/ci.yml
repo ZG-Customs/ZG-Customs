@@ -1,15 +1,78 @@
-name: CI Pipeline
+name: CI
 
 on:
   push:
-    branches: [ main, dev ]
+    branches: [main]
   pull_request:
-    branches: [ main, dev ]
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  test:
+  backend:
+    name: Application tests and Docker builds
     runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:18.6-bookworm
+        env:
+          POSTGRES_DB: zg_customs_test
+          POSTGRES_USER: zg_customs_test
+          POSTGRES_PASSWORD: test-only-password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U zg_customs_test -d zg_customs_test"
+          --health-interval 5s --health-timeout 5s --health-retries 12
     steps:
-      - uses: actions/checkout@v4
-      - name: Run Test Suite
-        run: echo "Executing lint, build, and test steps..."
+      - uses: actions/checkout@v5
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+          cache-dependency-path: backend/pom.xml
+      - name: Check deployment scripts
+        run: |
+          bash -n scripts/init-env.sh ops/deploy.sh ops/backup.sh ops/prepare-team-accounts.sh ops/postgres/init-app-user.sh
+          shellcheck scripts/init-env.sh ops/deploy.sh ops/backup.sh ops/prepare-team-accounts.sh ops/postgres/init-app-user.sh
+          python3 -m py_compile ops/sync.py
+          python3 -m unittest discover -s tests/deployment -v
+      - name: Run backend integration tests against PostgreSQL
+        working-directory: backend
+        env:
+          TEST_DATABASE_URL: jdbc:postgresql://localhost:5432/zg_customs_test
+        run: ./mvnw -B -ntp verify
+      - name: Validate Docker Compose configuration
+        run: docker compose --env-file .env.example config --quiet
+      - name: Build backend container
+        run: docker build --build-arg APP_VERSION="$GITHUB_SHA" -t zg-customs-backend:ci backend
+      - name: Build React and Caddy container
+        run: docker build --build-arg APP_VERSION="$GITHUB_SHA" -t zg-customs-web:ci frontend
+      - name: Start the application with a freshly initialized database
+        env:
+          APP_VERSION: ci
+          DB_PORT: '55433'
+          API_PORT: '18080'
+          WEB_HTTP_PORT: '18088'
+          WEB_HTTPS_PORT: '18443'
+        run: |
+          docker compose --project-name zg-customs-ci --env-file .env.example up -d --no-build --wait --wait-timeout 240
+          python3 -c 'import socket; socket.create_connection(("127.0.0.1", 55433), timeout=5).close()'
+          curl --fail --silent --show-error http://127.0.0.1:18080/api/service-types | python3 -c 'import json, sys; assert len(json.load(sys.stdin)) == 4'
+          python3 tests/deployment/smoke_web.py http://127.0.0.1:18088
+      - name: Clean up the disposable Compose environment
+        if: always()
+        env:
+          APP_VERSION: ci
+          DB_PORT: '55433'
+          API_PORT: '18080'
+          WEB_HTTP_PORT: '18088'
+          WEB_HTTPS_PORT: '18443'
+        run: docker compose --project-name zg-customs-ci --env-file .env.example down -v
