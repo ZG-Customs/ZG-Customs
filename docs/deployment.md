@@ -1,6 +1,6 @@
 # Razvojno okruženje i Azure server
 
-Ova inačica uspostavlja infrastrukturu: Java 21 / Spring Boot 4.1.2, PostgreSQL 18.6 i Docker Compose. API čita četiri vrste servisa iz baze. Prijava, korisnici, vozila, naručivanje, frontend i vanjske integracije još nisu implementirani.
+Ova inačica uspostavlja infrastrukturu: React / TypeScript / Vite, Caddy, Java 21 / Spring Boot 4.1.2, PostgreSQL 18.6 i Docker Compose. Početni frontend prikazuje četiri vrste servisa iz baze preko API-ja. Prijava, korisnici, vozila, naručivanje i vanjske integracije još nisu implementirani. [Upute za frontend i HTTPS](frontend.md) opisuju React razvoj i javnu domenu.
 
 ## Lokalno pokretanje
 
@@ -17,7 +17,7 @@ curl http://localhost:8080/actuator/health/readiness
 
 Na Windowsu se skripta može pokrenuti kroz Git Bash. Alternativno kopirajte `.env.example` u `.env` i postavite vlastite lozinke. Primjerne vrijednosti nisu namijenjene serveru. Docker Desktop mora koristiti Linux containere.
 
-PostgreSQL sluša samo na `127.0.0.1:5432`, backend na `127.0.0.1:8080`. Portovi se po potrebi mijenjaju kroz `DB_PORT` i `API_PORT` u `.env`. Backend unutar Docker mreže pristupa bazi preko naziva `postgres`, a ne preko `localhost`.
+Lokalni frontend otvara se na `http://localhost:8088`. PostgreSQL sluša samo na `127.0.0.1:5432`, backend na `127.0.0.1:8080`. Portovi se po potrebi mijenjaju kroz `WEB_HTTP_PORT`, `DB_PORT` i `API_PORT` u `.env`. Backend unutar Docker mreže pristupa bazi preko naziva `postgres`, a ne preko `localhost`.
 
 Za lokalni rad na Javi pokrenite samo `docker compose up -d postgres`, unesite `DB_PASSWORD` iz svoje `.env` u konfiguraciju pokretanja IDE-a i pokrenite `ZgCustomsApplication`. JDBC URL je `jdbc:postgresql://localhost:5432/zg_customs`, korisnik `zg_customs`. Nemojte pokretati lokalni Java proces i backend container na istom portu.
 
@@ -38,7 +38,7 @@ Svaki član koristi vlastiti SSH ključ i račun kad mu se odobri pristup. Priva
 ssh -i ~/.ssh/id_ed25519_ivanbartol ivanbartol@<SERVER_IP>
 ```
 
-Azure mrežno pravilo mora dopuštati SSH s trenutačne javne IP adrese korisnika. Nakon promjene mreže možda treba ažurirati pravilo. Korisnicima aplikacije kasnije će se javno otvoriti samo HTTP/HTTPS preko reverse proxyja.
+Azure mrežno pravilo mora dopuštati SSH s trenutačne javne IP adrese korisnika. Nakon promjene mreže možda treba ažurirati pravilo. Za javnu aplikaciju koriste se HTTP/HTTPS portovi Caddyja; port baze i izravni backend ostaju dostupni samo lokalno ili tunelom.
 
 Za pristup API-ju i bazi pokrenite na vlastitom računalu i ostavite Terminal otvoren:
 
@@ -134,7 +134,7 @@ Pričekajte da `pg_isready` u testnom containeru potvrdi spremnost prije testova
 
 ## Preostalo za javnu aplikaciju
 
-Sljedeći koraci su frontend, domena i HTTPS reverse proxy, OIDC prijava i autorizacija, poslovne funkcionalnosti, vanjske integracije te kopije izvan servera. Trenutačni API nema korisničke podatke ni operacije pisanja i ostaje dostupan samo lokalno/SSH tunelom. Ovo postavljanje samo po sebi ne ispunjava sve zahtjeve prvog ciklusa projekta.
+Sljedeći koraci su OIDC prijava i autorizacija, poslovne funkcionalnosti i njihovo korisničko sučelje, vanjske integracije te kopije izvan servera. Trenutačni javni API daje samo vrste servisa, bez korisničkih podataka i operacija pisanja. Management endpointi ostaju dostupni samo lokalno/SSH tunelom. Ovo postavljanje samo po sebi ne ispunjava sve zahtjeve prvog ciklusa projekta.
 
 ## Provjera početnog postavljanja — 23. 10. 2026.
 

@@ -4,7 +4,7 @@
 
 ZG Customs razvija šesteročlani studentski tim u sklopu kolegija [Programsko inženjerstvo](https://www.fer.unizg.hr/predmet/proinz) na Fakultetu elektrotehnike i računarstva Sveučilišta u Zagrebu, u akademskoj godini **2026./2027.** Projekt se temelji na zadanoj temi **AutoServis**, autorice Ede Jovičić.
 
-> **Status projekta:** početna infrastruktura. Pripremljeni su Spring Boot backend, PostgreSQL, Docker Compose i CI provjere. API za vrste servisa služi provjeri veze s bazom. Ostale funkcionalnosti u nastavku predstavljaju planirani opseg.
+> **Status projekta:** početna demonstracijska inačica. React stranica prikazuje vrste servisa iz Spring Boot backenda i PostgreSQL baze. Docker Compose i CI provjere pokrivaju frontend i backend. Ostale funkcionalnosti u nastavku predstavljaju planirani opseg.
 
 ## Opis aplikacije
 
@@ -37,14 +37,14 @@ Detaljan opseg, zahtjevi, obrasci uporabe, arhitektura i rezultati ispitivanja v
 
 ## Postavljanje (deployment)
 
-**Status:** početni backend i baza pokrenuti su na Azure Ubuntu serveru. Pristup je kroz SSH tunel; javno korisničko sučelje još nije postavljeno. Automatizacija je pripremljena za objavu prihvaćenih promjena iz `main` nakon uspješnog CI-ja.
+**Status:** početna React stranica, backend i baza pripremljeni su za javno postavljanje na Azure Ubuntu serveru preko Caddyja i HTTPS-a. Automatizacija objavljuje prihvaćene promjene iz `main` nakon uspješnog CI-ja.
 
 | Podatak | Trenutačno stanje |
 | --- | --- |
-| Javni URL | **[DOPUNITI nakon prvog postavljanja]** |
+| Domena | [zgcustoms.duckdns.org](https://zgcustoms.duckdns.org) |
 | Platforma za hosting | Microsoft Azure, Ubuntu 24.04 LTS i Docker Compose. |
-| Pristup demonstraciji | **[DOPUNITI: način prijave i pristup demonstracijskim ulogama]** |
-| Ograničenja postavljene inačice | **[DOPUNITI nakon prve funkcionalne inačice]** |
+| Pristup demonstraciji | Javna naslovna stranica i popis vrsta servisa; korisnička prijava još nije implementirana. |
+| Ograničenja postavljene inačice | Naručivanje, radni nalozi i ostale poslovne funkcionalnosti još nisu implementirani. |
 
 **Planirani scenarij demonstracije:** vlasnik prijavljuje vozilo i traži termin, voditelj potvrđuje zahtjev i dodjeljuje servisera, a serviser evidentira radove. Vlasnik zatim prati status i pregledava završeni servis.
 
@@ -68,15 +68,15 @@ bash scripts/init-env.sh
 docker compose up -d --build --wait
 ```
 
-API: `http://localhost:8080/api/service-types`. Provjera spremnosti: `http://localhost:8080/actuator/health/readiness`.
+Frontend: `http://localhost:8088`. API: `http://localhost:8080/api/service-types`. Provjera spremnosti: `http://localhost:8080/actuator/health/readiness`.
 
-[Upute za lokalni razvoj, Windows, SSH tunel, bazu i Azure postavljanje](docs/deployment.md) opisuju konfiguraciju, migracije, testiranje i nadogradnje. Za Java razvoj izvan containera koristi se Java 21 i uključeni Maven Wrapper. Frontend još nije implementiran.
+[Upute za lokalni razvoj, Windows, SSH tunel, bazu i Azure postavljanje](docs/deployment.md) opisuju konfiguraciju, migracije, testiranje i nadogradnje. Za Java razvoj izvan containera koristi se Java 21 i uključeni Maven Wrapper. [React, Vite i javna domena](docs/frontend.md) opisuje frontend razvoj uz Node.js 24 i razliku između razvojnog poslužitelja i objave aplikacije.
 
 U repozitorij se ne pohranjuju lozinke, privatni SSH ključevi ni pristupni tokeni. Upute za konfiguraciju trebaju sadržavati nazive potrebnih varijabli i ogledne vrijednosti.
 
 ## Tehnologije
 
-Početni backend i infrastruktura koriste Java 21 / Spring Boot 4.1.2, PostgreSQL 18.6, Docker Compose i Azure Ubuntu. React / TypeScript ostaje prijedlog za frontend. Tim treba uskladiti odabir i opseg s asistenticom.
+Početna inačica koristi React / TypeScript / Vite, Java 21 / Spring Boot 4.1.2, PostgreSQL 18.6, Caddy, Docker Compose i Azure Ubuntu. Tim treba uskladiti odabir i opseg s asistenticom.
 
 | Predložena tehnologija ili alat | Uloga u projektu | Razlog razmatranja |
 | --- | --- | --- |
@@ -141,7 +141,7 @@ Kod trećih strana, slike, ikone i drugi uključeni sadržaji zadržavaju vlasti
 
 Pri radu na projektu primjenjuju se FER-ova [pravila o primjerenoj uporabi umjetne inteligencije](https://www.fer.unizg.hr/_download/repository/Policy%20on%20the%20appropriate%20use%20of%20artificial%20intelligence%20at%20the%20faculty%20of%20electrical%20engineering%20and%20computing%5B1%5D.pdf).
 
-**Dosadašnja uporaba:** OpenAI Codex korišten je kao pomoć pri razradi početnog plana, izradi README-a te pripremi početnog Spring Boot backenda, migracije baze, testova, Docker konfiguracije i skripti za Azure postavljanje. Tim treba pregledati kod i rezultate provjera prije prihvaćanja promjena.
+**Dosadašnja uporaba:** OpenAI Codex korišten je kao pomoć pri razradi početnog plana, izradi README-a te pripremi početne React stranice, Spring Boot backenda, migracije baze, testova, Docker/Caddy konfiguracije i skripti za Azure postavljanje. Tim treba pregledati kod i rezultate provjera prije prihvaćanja promjena.
 
 **Pregled tima:** **[DOPUNITI: tko je pregledao tekst, koje je provjere proveo i koje je izmjene unio]**. Tim prije objave treba provjeriti točnost opisa i usklađenost sa stvarnim stanjem projekta. Daljnja uporaba alata i provjera rezultata bilježit će se u [projektnoj dokumentaciji](docs/Home.md#izjava-o-uporabi-umjetne-inteligencije).
 

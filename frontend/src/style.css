@@ -1,0 +1,43 @@
+:root { font-family: Arial, Helvetica, sans-serif; color: #252a25; background: #f4f3ed; font-synthesis: none; text-rendering: optimizeLegibility; -webkit-font-smoothing: antialiased; }
+* { box-sizing: border-box; }
+body { margin: 0; }
+a { color: inherit; }
+.wrap { width: min(1280px, calc(100% - 96px)); margin-inline: auto; }
+.header { display: flex; align-items: center; justify-content: space-between; padding-block: 32px; border-bottom: 1px solid #d7d9cd; }
+.wordmark { display: inline-flex; align-items: center; gap: 9px; font-size: 20px; font-weight: 900; letter-spacing: -1px; text-decoration: none; }
+.brand-square { width: 12px; height: 12px; background: #6b8140; transform: skew(-14deg); }
+.badge { display: inline-flex; align-items: center; gap: 9px; font-size: 12px; padding: 9px 13px; border: 1px solid #cdd3c0; border-radius: 30px; }
+.badge > span { width: 6px; height: 6px; border-radius: 50%; background: #6b8140; }
+.hero { padding: 74px 0 76px; display: grid; grid-template-columns: 1.05fr 1fr; align-items: center; gap: 46px; }
+.eyebrow { font-size: 11px; font-weight: 700; letter-spacing: 1.8px; margin: 0 0 22px; }
+h1 { font-size: clamp(44px, 5.7vw, 76px); line-height: 1.03; letter-spacing: -4px; margin: 0 0 24px; font-weight: 700; }
+h1 span { color: #6b8140; }
+.intro { max-width: 390px; color: #60665b; font-size: 17px; line-height: 1.7; margin: 0 0 29px; }
+.button { display: inline-flex; align-items: center; gap: 25px; padding: 17px 21px; background: #252a25; color: #fff; text-decoration: none; font-size: 13px; font-weight: 600; border-radius: 5px; }
+.button:hover { background: #414d36; }
+.button span { font-size: 21px; line-height: 1; }
+.preview-note { margin: 16px 0 0; font-size: 11px; color: #60665b; line-height: 1.6; max-width: 380px; }
+.car-panel { position: relative; border-radius: 12px; background: #252a25; color: #e6eadd; padding: 27px 28px 20px; overflow: hidden; }
+.panel-top, .panel-bottom { display: flex; align-items: center; justify-content: space-between; font-size: 9px; letter-spacing: 1.3px; }
+.panel-top { color: #c4cab9; }
+.car { display: block; width: 100%; margin: 36px 0 15px; }
+.panel-bottom { font-size: 15px; font-weight: 800; letter-spacing: -.4px; }
+.panel-mark { width: 34px; height: 34px; background: #d5fc65; color: #252a25; border-radius: 50%; display: grid; place-items: center; font-size: 23px; font-weight: 400; }
+.services { padding: 37px 0 62px; border-top: 1px solid #d7d9cd; scroll-margin-top: 25px; }
+.section-heading { display: flex; align-items: end; justify-content: space-between; gap: 25px; margin-bottom: 28px; }
+.section-heading .eyebrow { margin-bottom: 13px; }
+h2 { font-size: 29px; letter-spacing: -1px; margin: 0; }
+.section-heading > p { margin: 0; font-size: 12px; line-height: 1.6; color: #60665b; }
+.service-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+.service { padding: 24px; border: 1px solid #d7d9cd; border-radius: 7px; }
+.service-number { font-size: 11px; color: #687945; font-weight: 700; }
+h3 { font-size: 17px; margin: 25px 0 10px; letter-spacing: -.4px; }
+.service p { font-size: 13px; color: #60665b; line-height: 1.6; margin: 0; }
+.notice { padding: 26px; background: #e9ecdf; border-radius: 7px; font-size: 14px; line-height: 1.6; }
+.footer { border-top: 1px solid #d7d9cd; display: flex; gap: 20px; justify-content: space-between; padding-block: 24px; color: #60665b; font-size: 10px; line-height: 1.6; }
+.footer a { text-underline-offset: 3px; }
+.skip-link { position: absolute; top: -100px; left: 16px; padding: 12px; background: #252a25; color: white; z-index: 2; }
+.skip-link:focus { top: 10px; }
+:focus-visible { outline: 3px solid #718d3c; outline-offset: 5px; }
+@media (max-width: 850px) { .wrap { width: calc(100% - 48px); } .hero { gap: 28px; padding-block: 50px; } h1 { letter-spacing: -2.5px; } .car-panel { padding: 20px; } .panel-top { font-size: 7px; } .service-grid { grid-template-columns: repeat(2, 1fr); } .section-heading { align-items: start; flex-direction: column; gap: 14px; } }
+@media (max-width: 580px) { .wrap { width: calc(100% - 36px); } .header { padding-block: 22px; gap: 12px; } .wordmark { font-size: 16px; gap: 6px; } .badge { font-size: 10px; padding: 7px 9px; } .hero { grid-template-columns: 1fr; padding: 40px 0; gap: 32px; } h1 { font-size: clamp(40px, 11vw, 64px); } .intro { font-size: 16px; } .car { margin-top: 15px; } .panel-top { font-size: 9px; } h2 { font-size: 26px; } .service { padding: 19px; } h3 { font-size: 16px; } .footer { flex-direction: column; gap: 8px; padding-block: 22px; } }

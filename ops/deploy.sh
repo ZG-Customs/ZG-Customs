@@ -33,7 +33,7 @@ trap on_exit EXIT
 export APP_VERSION="$revision"
 compose=(docker compose --project-name zg-customs --env-file "$root/.env" -f "$release/compose.yaml")
 "${compose[@]}" config --quiet
-"${compose[@]}" build --pull backend
+"${compose[@]}" build --pull backend web
 
 if [[ -s "$root/state/current-sha" ]]; then
   ZG_DEPLOY_ROOT="$root" bash "$release/ops/backup.sh"
@@ -43,6 +43,7 @@ fi
 "${compose[@]}" up -d --no-build --wait --wait-timeout 240
 api_address="$("${compose[@]}" port backend 8080)"
 curl --fail --silent --show-error --max-time 10 "http://$api_address/actuator/health/readiness"
+"${compose[@]}" exec -T --interactive=false web wget -q -O - http://127.0.0.1:8081/healthz
 printf '%s\n' "$revision" > "$root/state/current-sha.tmp"
 mv "$root/state/current-sha.tmp" "$root/state/current-sha"
 rm -f "$root/state/failed-sha"
