@@ -39,7 +39,7 @@ Razvojni Vite poslužitelj ne koristi se za javno posluživanje aplikacije. Za p
 
 ## Azure i DuckDNS
 
-Domena je `zgcustoms.duckdns.org`, s A zapisom koji pokazuje na javnu IP adresu Azure VM-a. Na serveru su u privatnoj `~/apps/zg-customs/.env` potrebne ove dodatne vrijednosti:
+Početna aplikacija dostupna je na [zgcustoms.duckdns.org](https://zgcustoms.duckdns.org). Domena ima A zapis koji pokazuje na javnu IP adresu Azure VM-a. Na serveru su u privatnoj `~/apps/zg-customs/.env` potrebne ove dodatne vrijednosti:
 
 ```dotenv
 SITE_ADDRESS=zgcustoms.duckdns.org
@@ -47,6 +47,17 @@ WEB_BIND=0.0.0.0
 WEB_HTTP_PORT=80
 WEB_HTTPS_PORT=443
 ```
+
+Nakon promjene ovih vrijednosti ponovno stvorite samo web container postojeće objave:
+
+```bash
+root="$HOME/apps/zg-customs"
+export APP_VERSION="$(cat "$root/state/current-sha")"
+docker compose --project-name zg-customs --env-file "$root/.env" \
+  -f "$root/releases/$APP_VERSION/compose.yaml" up -d --no-build --no-deps --wait web
+```
+
+Za prvo postavljanje bez `current-sha` slijedite [upute za instalaciju automatizacije](deployment.md#provjere-i-postavljanje-iz-githuba). Zdravo stanje containera samo po sebi ne potvrđuje javni HTTPS: nakon pokretanja otvorite domenu u pregledniku i provjerite certifikat i podatke.
 
 Azure NSG treba dopuštati dolazni TCP promet na portovima `80` i `443`. Ako je Ubuntu firewall uključen, isto treba dopustiti i ondje. Caddy automatski pribavlja i obnavlja TLS certifikat te HTTP preusmjerava na HTTPS. Certifikati se čuvaju u volumeu `zg-customs_caddy_data`, koji treba očuvati pri nadogradnjama.
 

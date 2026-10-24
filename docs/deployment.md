@@ -69,10 +69,10 @@ Server ne treba privatni GitHub ključ ni GitHub token za čitanje ovog javnog r
 ## Provjere i postavljanje iz GitHuba
 
 1. Promjene se šalju na radnu granu i otvara se PR prema `main`.
-2. GitHub Actions workflow **CI** pokreće integracijske testove na zasebnom PostgreSQL-u, provjerava skripte i Compose, gradi Docker image te pokreće aplikaciju sa svježe inicijaliziranom bazom i provjerava API.
+2. GitHub Actions workflow **CI** pokreće integracijske testove na zasebnom PostgreSQL-u, provjerava skripte i Compose, gradi Docker imageove frontenda i backenda te pokreće aplikaciju sa svježe inicijaliziranom bazom i provjerava web stranicu, JavaScript datoteku, API i izolaciju management endpointova.
 3. Nakon pregleda i spajanja PR-a, CI se ponovno izvršava za točan commit na `main`.
 4. Server svakih pet minuta provjerava `main`. Postavlja samo commit s uspješno dovršenim CI workflowom iz ovog repozitorija, događaja `push`, za tu istu verziju koda.
-5. Server gradi image označen punim Git SHA-om, prije nadogradnje stvara kopiju postojeće baze i čeka da baza i backend budu zdravi. Tek tada zapisuje `current-sha`.
+5. Server gradi imageove označene punim Git SHA-om, prije nadogradnje stvara kopiju postojeće baze i čeka da baza, backend i web budu zdravi. Tek tada zapisuje `current-sha`.
 
 Ovo je postavljanje koje pokreće server: GitHub runner ne treba ulazni SSH pristup serveru. Kod se gradi na serveru; GHCR se u ovoj početnoj konfiguraciji ne koristi. Prvo probno postavljanje može se ručno izvesti iz radne grane, prije pregleda PR-a. Takva inačica služi provjeri infrastrukture; automatske nadogradnje prate samo `main`.
 
@@ -140,4 +140,10 @@ Sljedeći koraci su OIDC prijava i autorizacija, poslovne funkcionalnosti i njih
 
 Na Azure serveru provjereni su API i PostgreSQL kroz SSH tunel, aplikacijski korisnik bez superuser ovlasti, očuvanje novog probnog zapisa nakon ponovnog stvaranja PostgreSQL containera te obnova sigurnosne kopije u zasebnu testnu bazu. Probni zapis uklonjen je nakon provjere. Privatna `.env` datoteka ima ovlasti `600`.
 
-GitHub CI provjerava četiri backend integracijska testa, dva testa uvjeta automatske objave, shell skripte, izgradnju imagea te pokretanje cijele Compose konfiguracije sa svježom bazom. Uključen je cron za provjeru `main` grane svakih pet minuta i dnevnu kopiju u 03:30 UTC. Početna verzija ručno je postavljena iz infrastrukturne grane; prvo automatsko postavljanje nakon mergea tek treba potvrditi. Kopije se trenutačno čuvaju samo na serveru.
+GitHub CI provjerava četiri backend integracijska testa, dva testa uvjeta automatske objave, shell skripte, izgradnju imagea te pokretanje cijele Compose konfiguracije sa svježom bazom. Uključen je cron za provjeru `main` grane svakih pet minuta i dnevnu kopiju u 03:30 UTC. Početna verzija ručno je postavljena iz infrastrukturne grane. Kopije se trenutačno čuvaju samo na serveru.
+
+## Provjera javne objave — 24. 10. 2026.
+
+Nakon spajanja [PR-a #2](https://github.com/ZG-Customs/ZG-Customs/pull/2), [CI za `main`](https://github.com/ZG-Customs/ZG-Customs/actions/runs/40038852059) uspješno je završio. Server je automatski postavio commit `d43a667affe19ad144c059804334210241190b74`; zapis `state/current-sha` odgovara toj verziji, a sva tri containera prijavljuju zdravo stanje.
+
+[Početna aplikacija](https://zgcustoms.duckdns.org) dostupna je preko javnog HTTPS-a. Azure pravilo `allow-web-http-https` dopušta TCP `80,443`, a serverova privatna `.env` sadrži javne web postavke iz [frontend uputa](frontend.md). Provjereni su valjan TLS certifikat, HTTP preusmjeravanje na HTTPS, prikaz jednostavne React stranice i dohvat četiri vrste servisa. Provjera `smoke_web.py` prošla je i na javnoj HTTPS adresi; `/actuator/health` vraća `404`. PostgreSQL i izravni backend ostaju vezani na lokalnu adresu servera.
