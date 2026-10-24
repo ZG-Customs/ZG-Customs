@@ -1,212 +1,149 @@
 # 2. Analiza zahtjeva
 
-**Cilj:** Iz odobrenog opsega projekta izvesti prepoznatljive, prioritetizirane i provjerljive zahtjeve. Zahtjevi se mogu mijenjati; pri završnoj predaji moraju odražavati dogovorenu aplikaciju. Izvori, odluke i poveznice u primjerima kolegija nastavni su scenariji, a ne projektni zapisi.
+Ovaj dokument opisuje zahtjeve za web-aplikaciju ZG Customs na temelju projektnog zadatka **AutoServis**, autorice Ede Jovičić (listopad 2026., stranice 2–3). Prema potvrdi člana tima, opseg zadatka zasad nije dodatno proširen ni izmijenjen.
 
-<details>
-<summary><strong>Održavanje zahtjeva ažurnima</strong></summary>
+Zahtjevi opisuju očekivano ponašanje konačne aplikacije, a ne tvrdnju da je ono već implementirano ili ispitano. Otvorena pitanja navedena su uz zahtjeve i u odjeljku 2.4.
 
-Primjeri koriste temu projekta CrisisMap. Neki namjerno sadrže korisne nedostatke za raspravu. Izvori, odluke i poveznice na provjere u tim primjerima **nastavni su scenariji**, a ne zapisi rada stvarnog studentskog tima. Zamijenite ih zahtjevima i dokazima svojeg odobrenog projekta. Značajne promjene zabilježite u odjeljku 2.5.
-
-</details>
+**Značenje prioriteta:** visok prioritet označava temeljni tijek rada ili upravljanje pristupom i korisnicima; srednji prioritet označava mogućnosti koje se mogu razvijati nakon temeljnog tijeka. Srednji prioritet ne znači da je zahtjev iz zadatka neobavezan ili izvan opsega. Nizak prioritet zasad nije dodijeljen.
 
 ## 2.1 Funkcijski zahtjevi
 
-**Cilj:** Navesti što aplikacija mora omogućiti korisnicima, odakle pojedina mogućnost proizlazi i koji se opažljivi rezultat smatra prihvaćanjem.
+Funkcijski zahtjevi opisuju radnje korisnika i opažljivo ponašanje sustava. Izvor „Odobreni zadatak” u tablici označava profesorov dokument AutoServis, čiji su zahtjevi navedeni na stranicama 2–3. Nazivi OAuth 2.0, Stripe i Resend konkretiziraju realizaciju prema projektnom odabiru. Kriteriji prihvaćanja služe budućoj provjeri; ondje gdje zadatak nije dovoljno određen izričito je navedeno što treba razjasniti.
 
-| ID | Opis | Prioritet | Izvor | Kriteriji prihvaćanja |
-| --- | --- | --- | --- | --- |
-| F-001 | [Funkcijski zahtjev/ponašanje sustava] | [Visok/Srednji/Nizak] | [Odobreni zadatak / zahtjev dionika / povratna informacija] | [Opažljivi rezultat] |
-|  |  |  |  |  |
-
-<details>
-<summary><strong>Izvori zahtjeva i kriteriji prihvaćanja</strong></summary>
-
-Svaki zahtjev treba imati stabilan ID. **Izvor označava odakle zahtjev potječe**, primjerice iz odobrenog projektnog zadatka, zahtjeva dionika ili povratne informacije koja je promijenila zahtjev. Opišite opažljivo ponašanje umjesto naziva zaslona ili programskog okvira. U cijeloj dokumentaciji koristite istu ljestvicu prioriteta. Složenu korisničku interakciju objasnite u odgovarajućem obrascu uporabe umjesto kopiranja cijelog tijeka u ovu tablicu.
-
-**Primjer — funkcijski zahtjevi za aplikaciju CrisisMap:**
-
-Kategorije izvora pokazuju različite načine na koje zahtjev može nastati.
-
-| ID | Opis | Prioritet | Izvor | Kriteriji prihvaćanja |
-| --- | --- | --- | --- | --- |
-| F-001 | Sustav omogućuje korisniku registraciju računa pomoću adrese e-pošte. | Visok | Zahtjev dionika | Korisnik se može registrirati adresom e-pošte, primiti poruku za potvrdu i aktivirati račun slijedeći poveznicu. |
-| F-002 | Sustav omogućuje oporavak lozinke putem e-pošte. | Srednji | Zahtjev dionika | Korisnik može zatražiti ponovno postavljanje lozinke, primiti poveznicu i uspješno postaviti novu lozinku. |
-| F-003 | Sustav prikazuje popis dostupnih resursa povezanih s kriznim događajima. | Visok | Postojeći sustav | Korisnik može pregledati ažurirani popis resursa relevantnih za vrstu kriznog događaja, lokaciju i raspoloživost. |
-| F-004 | Sustav omogućuje korisnicima podnošenje prijave kriznog događaja s lokacijom. | Visok | Dokument sa zahtjevima | Korisnik može podnijeti prijavu s vrstom kriznog događaja, razinom ozbiljnosti i lokacijom te dobiti potvrdu o zaprimanju. Ako odbije pristup geolokaciji preglednika, može lokaciju odabrati ručno.|
-| F-005 | Sustav šalje korisnicima obavijesti o relevantnim promjenama u njihovoj blizini. | Visok | Povratna informacija korisnika | Korisnici dobivaju obavijest unutar jedne minute od relevantne promjene za njihovu lokaciju. |
-| F-006 | Sustav prikazuje dostupne resurse prema lokaciji. | Visok | Analiza dokumentacije | Prikazuje se ažurirani popis resursa prilagođen vrsti kriznog događaja, lokaciji i raspoloživosti. |
-| F-007 | Sustav prikazuje prijave kriznih događaja s lokacijom kao oznake na karti. | Visok | Odobreni zadatak | Prijava s valjanom lokacijom prikazuje se kao oznaka na karti; odabirom oznake korisnik može otvoriti pripadajuću prijavu. |
-| F-008 | Sustav omogućuje moderatoru odobravanje ili odbijanje podnesenih prijava. | Visok | Zahtjev dionika | Moderator može odobriti ili odbiti prijavu koja čeka pregled; korisnik bez moderatorskih ovlasti ne može izvršiti te radnje. |
-
-**Kriteriji prihvaćanja i podrijetlo zahtjeva:** Primjer prikazuje registraciju, oporavak lozinke, resurse, prijavu kriznog događaja i obavijesti te nekoliko vrsta izvora i opažljivih kriterija. Istodobno otvara korisna pitanja: opisuju li F-003 i F-006 istu funkcionalnost resursa? Je li obećanje od jedne minute u F-005 dogovoreno i moguće ispitati? Treba li aplikaciji koja koristi isključivo OAuth uopće F-001 i F-002? Retke koristite kao materijal za analizu; u svojem projektu navedite vlastite zahtjeve. U stvarnom projektu stupac Izvor bilježi odakle su doista potekli njegovi zahtjevi.
-
-**Primjer prilagodbe kada odobreni zadatak koristi OAuth i kartu:** Umjesto kopiranja registracije e-poštom i oporavka lozinke formulirajte relevantni zahtjev za prijavu, primjerice: „F-001: Korisnici se prijavljuju putem odobrenog OAuth pružatelja identiteta; uspješna prijava omogućuje radnje rezervirane za prijavljene korisnike, a odustajanje od prijave ostavlja te radnje nedostupnima.” Zaseban zahtjev za kartu može glasiti: „F-007 : Prijave s lokacijom prikazuju se kao oznake na karti; odabirom oznake otvara se pripadajuća prijava.” Izvor treba biti stvarni odobreni zadatak ili dogovoreni zahtjev dionika. Ova je prilagodba zamjena za neodgovarajuće retke, a ne dodatna tablica koju svaki tim mora ispuniti.
-
-Za složenu interakciju kratak scenarij *Given / When / Then* može pojasniti kriterij. Primjerice: *Given* prijava bez lokacije, *when* građanin je podnese, *then* sustav objašnjava da lokacija nedostaje i ne pohranjuje prijavu. Nemojte jednostavan kriterij ponavljati i u prozi i u Gherkinu niti pisati Gherkin za svaki zahtjev.
-
-</details>
-
+| ID    | Opis                                                                                                            | Prioritet | Izvor            | Kriteriji prihvaćanja                                                                                                                                                                                                                 |
+| ----- | --------------------------------------------------------------------------------------------------------------- | --------- | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| F-001 | Registracija i prijava korisnika ostvaruju se putem vanjskog servisa za autentifikaciju uz OAuth 2.0.                        | Visok     | Odobreni zadatak | Korisnik se može registrirati i prijaviti putem vanjskog servisa uz OAuth 2.0 te koristiti platformu u svojoj ulozi.                                                                                                                               |
+| F-002 | Korisnik se registrira kao vlasnik vozila, serviser ili voditelj autoservisa.                                   | Visok     | Odobreni zadatak | Pri registraciji evidentira se jedna od navedenih uloga. Način dodjele i provjere uloga treba dodatno razjasniti.                                                                                                                     |
+| F-003 | Vlasnik vozila pri registraciji unosi osnovne osobne i kontaktne podatke.                                       | Visok     | Odobreni zadatak | Uz račun vlasnika evidentirani su osobni i kontaktni podaci; točan skup obaveznih polja treba dogovoriti.                                                                                                                             |
+| F-004 | Serviser i voditelj autoservisa pri registraciji navode podatke o autoservisu u kojem rade.                     | Visok     | Odobreni zadatak | Uz registriranog servisera ili voditelja evidentirani su podaci o pripadajućem autoservisu.                                                                                                                                           |
+| F-005 | Vlasnik može unijeti svoja vozila i njihove osnovne podatke.                                                    | Visok     | Odobreni zadatak | Vlasnik može unijeti i pregledati vozilo s registarskom oznakom, markom, modelom, godinom proizvodnje i brojem prijeđenih kilometara.                                                                                                 |
+| F-006 | Vlasnik može zatražiti termin servisa za pojedino vozilo odabirom vrste servisa i željenog termina.             | Visok     | Odobreni zadatak | Za odabrano vozilo evidentiran je zahtjev s vrstom servisa i željenim terminom. Primjeri vrsta iz zadatka su redovni servis, zamjena guma, popravak kočnica i dijagnostika.                                                           |
+| F-007 | Vlasnik može pratiti status svojeg servisnog zahtjeva.                                                          | Visok     | Odobreni zadatak | Vlasniku je prikazan trenutačni status zahtjeva. Zadatak kao primjere navodi: zatražen, potvrđen, vozilo zaprimljeno, servis u tijeku, čeka odobrenje, završen i otkazan. Konačan skup statusa i dopuštene prijelaze treba razraditi. |
+| F-008 | Sustav vlasniku šalje obavijesti o promjenama statusa i važnim informacijama putem servisa Resend. | Visok     | Odobreni zadatak | Nakon promjene statusa vlasnik prima obavijest e-poštom. Ostale događaje koji se smatraju važnim informacijama treba dodatno odrediti.                                                                                                |
+| F-009 | Serviser ima profil s osnovnim informacijama o sebi i autoservisu.                                              | Srednji   | Odobreni zadatak | Profil servisera sadrži ime, prezime, područje specijalizacije i podatke o autoservisu.                                                                                                                                               |
+| F-010 | Serviser može pregledati dodijeljena vozila i servisne zahtjeve.                                                | Visok     | Odobreni zadatak | Serviseru su dostupni pregled dodijeljenih vozila i pripadajući servisni zahtjevi.                                                                                                                                                    |
+| F-011 | Serviser može evidentirati obavljene radove, ugrađene dijelove, utrošeno vrijeme i dodatne napomene.            | Visok     | Odobreni zadatak | Uneseni radovi, dijelovi, vrijeme i napomene pohranjeni su uz odgovarajući servis i mogu se ponovno pregledati.                                                                                                                       |
+| F-012 | Serviser može izraditi ponudu za dodatne radove koji nisu navedeni u početnom zahtjevu.                         | Visok     | Odobreni zadatak | Ponuda sadrži opis dodatnih radova i procijenjeni trošak te je dostupna vlasniku na odlučivanje.                                                                                                                                      |
+| F-013 | Vlasnik može prihvatiti ili odbiti ponudu dodatnih radova putem platforme.                                      | Visok     | Odobreni zadatak | Vlasnik može odabrati prihvaćanje ili odbijanje ponude, a njegova odluka evidentirana je uz ponudu.                                                                                                                                   |
+| F-014 | Serviser nakon završetka radova ažurira status servisa i unosi konačni trošak.                                  | Visok     | Odobreni zadatak | Uz završeni servis evidentirani su ažurirani status i konačni trošak.                                                                                                                                                                 |
+| F-015 | Voditelj autoservisa može upravljati serviserima svojeg autoservisa.                                            | Visok     | Odobreni zadatak | Voditelju je omogućeno upravljanje serviserima autoservisa. Točne radnje i pravila povezivanja servisera s autoservisom treba dodatno odrediti.                                                                                       |
+| F-016 | Voditelj može upravljati servisnim zahtjevima i dodjeljivati ih pojedinim serviserima.                          | Visok     | Odobreni zadatak | Voditelj može pregledati zahtjeve autoservisa i evidentirati dodjelu odabranog zahtjeva serviseru.                                                                                                                                    |
+| F-017 | Voditelj može upravljati terminima i mijenjati raspored servisa.                                                | Visok     | Odobreni zadatak | Voditelj može promijeniti raspored, a novi termin prikazuje se uz odgovarajući servisni zahtjev. Pravila raspoloživosti i preklapanja termina treba dogovoriti.                                                                       |
+| F-018 | Voditelj može pregledavati servisnu povijest svih vozila servisiranih u njegovu autoservisu.                    | Srednji   | Odobreni zadatak | Voditelju su dostupni povijesni zapisi o servisiranju vozila u njegovu autoservisu.                                                                                                                                                   |
+| F-019 | Voditelj može pregledavati statistiku poslovanja autoservisa.                                                   | Srednji   | Odobreni zadatak | Prikazani su broj obavljenih servisa prema vrsti, prosječno trajanje servisa i ukupna vrijednost obavljenih usluga. Obračunsko razdoblje i način izračuna trajanja treba dogovoriti.                                                  |
+| F-020 | Vlasnik nakon završetka servisa može pregledati detaljan račun.                                                 | Visok     | Odobreni zadatak | Vlasniku je dostupan detaljan račun za završeni servis; obavezni sadržaj i oblik računa treba razjasniti.                                                                                                                             |
+| F-021 | Vlasnik nakon završetka servisa može ocijeniti kvalitetu servisa i ostaviti komentar.                           | Srednji   | Odobreni zadatak | Ocjena i komentar vlasnika evidentirani su uz završeni servis. Ljestvicu ocjenjivanja treba dogovoriti.                                                                                                                               |
+| F-022 | Sustav vodi servisnu povijest svakog vozila, a vlasnik može pregledati svoju servisnu povijest.                 | Visok     | Odobreni zadatak | Povijest obuhvaća datume i vrste servisa, obavljene radove, zamijenjene dijelove i troškove te je dostupna vlasniku za pregled.                                                                                                       |
+| F-023 | Vlasnik može preuzeti potvrdu o obavljenom servisu.                                                             | Srednji   | Odobreni zadatak | Vlasnik može preuzeti potvrdu za obavljeni servis. Format i obavezni sadržaj potvrde treba dogovoriti.                                                                                                                                |
+| F-024 | Autoservisi plaćaju mjesečnu pretplatu kreditnom karticom putem servisa Stripe za korištenje naprednih funkcionalnosti.              | Srednji   | Odobreni zadatak | Autoservis može platiti mjesečnu pretplatu kreditnom karticom putem servisa Stripe. Prije konačne provjere treba odrediti napredne funkcionalnosti i pravila aktivacije, isteka i neuspjele naplate.                                                       |
+| F-025 | Administrator platforme može upravljati korisnicima i autoservisima.                                            | Visok     | Odobreni zadatak | Administratoru je omogućeno upravljanje korisnicima i autoservisima; skup radnji osim zasebno navedene deaktivacije treba dodatno razjasniti.                                                                                         |
+| F-026 | Administrator platforme može postaviti cijenu mjesečne pretplate za autoservise.                                | Srednji   | Odobreni zadatak | Administrator može postaviti cijenu pretplate. Trenutak primjene promjene na postojeće pretplate treba dogovoriti.                                                                                                                    |
+| F-027 | Administrator platforme može deaktivirati korisničke račune.                                                    | Visok     | Odobreni zadatak | Administrator može odabrani račun označiti deaktiviranim. Posljedice za aktivne prijave i postojeće servisne zahtjeve treba razjasniti.                                                                                               |
+| F-028 | Administrator platforme može pregledavati osnovne podatke o korištenju platforme.                               | Srednji   | Odobreni zadatak | Administratoru je dostupan pregled podataka o korištenju platforme; konkretne pokazatelje treba dogovoriti.                                                                                                                           |
 
 ## 2.2 Nefunkcijski zahtjevi
 
-**Cilj:** Odrediti važna svojstva kvalitete i uvjete rada odobrene aplikacije na način koji tim može razumno provjeriti.
+Nefunkcijski zahtjevi određuju svojstva kvalitete aplikacije i način njihove provjere. Svi zahtjevi u tablici imaju status „potvrđeno” prema uputi člana tima tijekom uređivanja ove analize. Taj status označava prihvaćanje zahtjeva u dokumentu, a ne dovršenu implementaciju ili uspješno ispitivanje. Načini provjere predstavljaju plan budućih ispitivanja.
 
-| ID | Opis | Prioritet | Izvor | Način provjere |
-| --- | --- | --- | --- | --- |
-| NF-01 | [Konkretan zahtjev (npr. odziv, sigurnost, pristupačnost)] | Visok / Srednji / Nizak | [Sigurnost / Uputa / SLA] | [Mjerenje / Testni scenarij / Pregled] |
-|  |  |  |  |  |
-
-<details>
-<summary><strong>Nefunkcijski zahtjevi za analizu</strong></summary>
-
-Relevantna svojstva mogu se odnositi na uporabljivost, pristupačnost, sigurnost, performanse ili pouzdanost. Odaberite svojstva specifična za projekt i opišite kako ih je moguće provjeriti. Zahtjev navodi što se očekuje; stvarna opažanja i dokazi pripadaju rezultatima ispitivanja, a ne drugom stupcu s rezultatima u ovoj tablici.
-
-**Primjer — nefunkcijski zahtjevi za aplikaciju CrisisMap:**
-
-| ID | Opis | Prioritet | Izvor |
-| --- | --- | --- | --- |
-| NF-1.1 | Sustav mora podržati 1.000 istodobnih korisnika uz vrijeme odziva kraće od 1 s. | Visok | SLA | Opteretiti sustav zadanim brojem istodobnih korisnika i izmjeriti vrijeme odziva. |
-| NF-1.2 | Svi osjetljivi podaci moraju biti šifrirani algoritmom AES-256. | Visok | Sigurnosna politika | Pregledati način pohrane i konfiguraciju šifriranja za podatke na koje se zahtjev odnosi. |
-| NF-1.3 | Korisničko sučelje mora podržavati engleski i španjolski jezik. | Srednji | Povratna informacija dionika | Pregledati reprezentativne korisničke tijekove u oba jezika. |
-| NF-1.4 | Dostupnost sustava mora iznositi najmanje 99,5 % mjesečno. | Visok | SLA | Izračunati mjesečnu dostupnost iz zapisa sustava za nadzor, ako takvi podaci postoje.|
-| NF-3.1.7 | Sustav treba imati odgovarajuću dokumentaciju. | Visok | Pravila dokumentiranja | Pregledati zahtijevane dokumentaciju prema obavezama.|
-| NF-3.1.7.1 | Kod sustava treba biti dokumentiran prema „Code Conventions for the Java Programming Language”. | Visok | Pravila dokumentiranja | Pregledati kod. |
-| NF-3.1.7.2 | Sustav treba biti opisan projektnim dokumentom/SRS-om. | Visok | Pravila dokumentiranja | Pregledati strukturu dokumenta  |
-| NF-3.1.7.3 | Sustav treba imati „Operativni priručnik” koji opisuje pravilnu uporabu. | Visok | Pravila dokumentiranja | Pregledati postoji li priručnik i mogu li se prema njemu izvršiti opisane radnje. |
-| NF-3.1.7.4 | Sustav treba imati „Plan implementacije” za pravilno postavljanje. | Visok | Smjernice za postavljanje | Pregledati odgovara li opisani postupak stvarnom postupku postavljanja.|
-
-**Provjerljivost i opseg:** Primjer uvodi performanse, sigurnost, lokalizaciju, dostupnost i dokumentaciju, uključujući hijerarhijski ID zahtjeva. Navedeni izvori primjeri su podrijetla zahtjeva, a ne dokaz da za studentski projekt stvarno postoji SLA ili sigurnosna politika. Vrijednosti poput 1.000 korisnika, 99,5 % mjesečne dostupnosti i AES-256 moraju imati odobren izvor i izvediv način provjere prije nego što postanu zahtjevi tima. Skup zahtjeva o dokumentaciji ilustrira razlaganje zahtjeva, ali zahtjevi za izradu *ove dokumentacije kolegija* u pravilu pripadaju uputama zadatka, a ne zahtjevima kvalitete web-aplikacije.
-
-**Primjer prilagodbe:** Ako je pristupačnost zahtjevana za  projekt, projektno specifičan zahtjev može glasiti: „NF-01: Sve obavezne radnje u obrascu za podnošenje prijave moguće je izvršiti samo tipkovnicom, uz vidljiv fokus na aktivnoj kontroli.” Provjera: navigirati kroz obrazac bez pokazivačkog uređaja, odabrati ili unijeti lokaciju, poslati prijavu i provjeriti može li se pročitati rezultat. To je provjerljivo svojstvo kvalitete, a ne dodatna funkcionalnost koju svaki projekt mora implementirati.
-
-</details>
+| ID    | Opis                                                                                                                                                                    | Prioritet | Izvor i status              | Način provjere                                                                                                                                                                                                                            |
+| ----- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| NF-01 | Korisničko sučelje mora omogućiti korištenje aplikacije na mobilnim uređajima.                                                                                          | Visok     | Zahtjev dionika; potvrđeno. | U mobilnom pregledniku provjeriti čitljivost sadržaja i izvođenje glavnih radnji svih uloga. Kriterij je dostupnost svih kontrola bez preklapanja i odsijecanja; uređaje i širine prikaza za provjeru treba dogovoriti.                   |
+| NF-02 | Pristup podacima i radnjama treba biti ograničen prema ulozi i pripadnosti vlasniku odnosno autoservisu, uz provjeru na poslužitelju.                                   | Visok     | Zahtjev dionika; potvrđeno. | Nakon dogovora matrice ovlasti pokušati dohvat i izmjenu podataka drugim korisničkim računom te izravnim zahtjevom prema poslužitelju; provjeriti da nedopušteni pristup nije omogućen.                                                   |
+| NF-03 | Javno dostupna aplikacija treba koristiti HTTPS za prijenos podataka između preglednika i poslužitelja.                                                                 | Visok     | Zahtjev dionika; potvrđeno. | Provjeriti valjanost certifikata, preusmjeravanje s HTTP-a na HTTPS i prijenos aplikacijskih zahtjeva putem HTTPS-a.                                                                                                                      |
+| NF-04 | Kod nevaljanog unosa ili neuspjele radnje aplikacija treba prikazati razumljivu poruku, bez lažne potvrde uspjeha ili otkrivanja tehničkih tajni.                       | Srednji   | Zahtjev dionika; potvrđeno. | Poslati obrazac s nedostajućim obaveznim podatkom i simulirati nedostupnost poslužitelja; provjeriti poruke, izostanak lažne potvrde i izostanak lozinki ili internih tragova pogreške u prikazu.                                         |
+| NF-05 | Glavne radnje u obrascima moraju biti dostupne tipkovnicom, uz vidljiv fokus, opisne oznake polja i poruke o pogreškama koje nisu izražene samo bojom.                  | Srednji   | Zahtjev dionika; potvrđeno. | Bez miša ispuniti i poslati obrasce za unos vozila i zahtjeva za servis te prihvatiti ili odbiti ponudu. Provjeriti redoslijed fokusa, oznake polja i tekstualno objašnjenje pogrešaka.                                                   |
+| NF-06 | Povezane promjene podataka unutar jedne poslovne radnje moraju se spremiti u cijelosti ili se u slučaju pogreške poništiti, bez djelomično spremljenih zapisa.          | Visok     | Zahtjev dionika; potvrđeno. | U ispitnom okruženju izazvati pogrešku tijekom spremanja završetka servisa i povezanih podataka o trošku. Provjeriti da se nijedna promjena te radnje nije djelomično spremila; pri uspješnom ponavljanju provjeriti sve povezane zapise. |
+| NF-07 | Podaci o vozilima, servisima i korisnicima moraju se moći obnoviti iz sigurnosne kopije baze podataka.                                                                  | Visok     | Zahtjev dionika; potvrđeno. | Izraditi sigurnosnu kopiju ispitne baze i obnoviti je u zasebnu praznu bazu. Usporediti broj zapisa, odabrane vrijednosti i veze među korisnicima, vozilima i servisima. Postupak i rezultat obnove zabilježiti uz ispitni slučaj.        |
+| NF-08 | Lozinke za bazu, ključevi vanjskih servisa i pristupni tokeni ne smiju biti uključeni u verzionirani izvorni kod, isporučeni kod preglednika ni aplikacijske zapisnike. | Visok     | Zahtjev dionika; potvrđeno. | U ispitnom okruženju koristiti prepoznatljive zamjenske tajne te provjeriti da ih nema u praćenim datotekama, izgrađenim datotekama sučelja i zapisnicima, uključujući zapise nakon izazvane pogreške.                                    |
 
 ## 2.3 Dionici i akteri
 
-**Cilj:** Utvrditi uloge koje utječu na zahtjeve i razlikovati dionike od aktera koji komuniciraju s aplikacijom.
+Akteri izravno komuniciraju s aplikacijom. Projektni zadatak određuje četiri korisničke uloge te vanjske usluge povezane s autentifikacijom i e-poštom. Za integracije su odabrani OAuth 2.0 za prijavu, Stripe za kartično plaćanje i Resend za e-poštu. OAuth 2.0 je protokol, a konkretan pružatelj identiteta još nije određen. Izbor integracija predstavlja projektnu odluku; zadatak ne propisuje Stripe ni Resend.
 
-| ID uloge ili aktera | Odnos prema sustavu | Relevantni zahtjevi |
-| --- | --- | --- |
-|  |  |  |
+| ID uloge ili aktera                      | Odnos prema sustavu                                                                                                                                        | Relevantni zahtjevi                          |
+| ---------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------- |
+| A-01 — Vlasnik vozila                    | Registrira se, unosi vozila, traži servis, prati status, odlučuje o dodatnim radovima te pregledava račune i povijest.                                     | F-001–F-003, F-005–F-008, F-013, F-020–F-023 |
+| A-02 — Serviser                          | Navodi podatke o sebi i autoservisu, pregledava dodijeljene zahtjeve, evidentira radove, izrađuje ponude i zaključuje servis.                              | F-001, F-002, F-004, F-009–F-012, F-014      |
+| A-03 — Voditelj autoservisa              | Upravlja serviserima, zahtjevima i terminima te pregledava povijest i statistiku autoservisa.                                                              | F-001, F-002, F-004, F-015–F-019             |
+| A-04 — Administrator platforme           | Upravlja korisnicima i autoservisima, postavlja cijenu pretplate, deaktivira račune i pregledava korištenje platforme.                                     | F-025–F-028                                  |
+| A-05 — Vanjski servis za autentifikaciju uz OAuth 2.0 | Sudjeluje u registraciji i prijavi korisnika uz OAuth 2.0; konkretan pružatelj identiteta još nije odabran.                                                                   | F-001                                        |
+| A-06 — Resend         | Vanjski servis za e-poštu koji omogućuje slanje obavijesti vlasnicima vozila.                                                                                                             | F-008                                        |
+| A-07 — Stripe        | Obrađuje kartično plaćanje mjesečne pretplate autoservisa i aplikaciji vraća rezultat plaćanja. Detaljan način integracije treba razraditi. | F-024                                        |
+| D-01 — Autoservis                        | Dionik koji koristi platformu za organizaciju servisiranja i plaća pretplatu za napredne funkcionalnosti. Osobu ovlaštenu za plaćanje treba odrediti.      | F-015–F-019, F-024, F-026                    |
+| D-02 — Asistentica Eda Jovičić           | Autorica zadatka i osoba za njegova dodatna pojašnjenja; nije korisnička uloga aplikacije.                                                                 | Tumačenje opsega iz zadatka, F-001–F-028     |
+| D-03 — Razvojni tim ZG Customs           | Razrađuje, implementira i provjerava zahtjeve te održava dokumentaciju. Nije zasebna korisnička uloga aplikacije.                                          | Svi zahtjevi u ovom dokumentu                |
 
-<details>
-<summary><strong>Akteri i povezani zahtjevi</strong></summary>
-
-**Primjer — akteri aplikacije CrisisMap:**
-
-| ID aktera | Uloga | Obuhvaćeni funkcijski zahtjevi |
-| --- | --- | --- |
-| A-01 | Koordinator pomoći | F-003: Pregled resursa; F-004: Podnošenje prijave kriznog događaja. |
-| A-02 | Građanin | F-001: Izrada računa; F-005: Primanje obavijesti. |
-| A-03 | Administrator sustava | NF-1.2: Provođenje sigurnosnih pravila; upravljanje korisnicima. |
-| A-04 | Posjetitelj | F-007: Pregled prijava na karti. |
-| A-05 | Moderator | F-008: Odobravanje ili odbijanje prijava. |
-
-**Odgovornosti aktera:** Uloga aktera treba biti povezana s interakcijom, a ne samo s nazivom. Provjerite podnosi li koordinator pomoći u odobrenom zadatku doista prijave kriznih događaja. Poveznica administratora s NF-1.2 navodi sigurnosni aspekt, ali sama po sebi ne opisuje obrazac uporabe; navedite stvarnu radnju administratora ili izostavite ulogu ako je nema. Nastavnici zainteresirani za rezultat mogu biti dionici, a da nisu akteri aplikacije. Tablica je polazište za razmišljanje, a ne potvrđen opis ovlasti u CrisisMapu.
-
-</details>
-
----
+NF-01 odnosi se na korisničko sučelje svih četiriju korisničkih uloga. Zahtjeve NF-02–NF-08 treba povezati s odgovarajućim korisničkim radnjama, komponentama i provjerama.
 
 ## 2.4 Ograničenja i pretpostavke
 
-**Cilj:** Zabilježiti projektno specifične granice i pretpostavke koje utječu na zahtjeve ili oblikovanje, zajedno s njihovim izvorom i praktičnom posljedicom. Ovo je njihovo mjerodavno mjesto u dokumentaciji.
+Ograničenja u tablici proizlaze iz projektnog zadatka. Nepotvrđene pojedinosti nisu predstavljene kao činjenice ili usvojene pretpostavke, nego kao otvorena pitanja za razradu s timom i asistenticom.
 
-| ID | Tip | Opis ograničenja ili pretpostavke | Izvor | Inženjerska posljedica / Provjera |
-| --- | --- | --- | --- | --- |
-| C-01 | Ograničenje | [Fiksni tehnički ili procesni uvjet] | [Zadatak / Pravila] | [Utjecaj na arhitekturu i oblikovanje] |
-| AS-01 | Pretpostavka | [Očekivani uvjet, npr. o podacima ili okolini] | [Procjena tima] | [Kako i kada će se provjeriti valjanost] |
-|  |  |  |  |  |
-<details>
-<summary><strong>Ograničenja nasuprot pretpostavkama</strong></summary>
+| ID   | Tip         | Opis ograničenja ili pretpostavke                                                                   | Izvor            | Inženjerska posljedica / Provjera                                                                                  |
+| ---- | ----------- | --------------------------------------------------------------------------------------------------- | ---------------- | ------------------------------------------------------------------------------------------------------------------ |
+| C-01 | Ograničenje | Rješenje je web-platforma.                                                                          | Zadatak, str. 2. | Korisničke tijekove omogućiti kroz web-sučelje; mobilni prikaz razrađen je zahtjevom NF-01.                        |
+| C-02 | Ograničenje | Registracija i prijava koriste vanjski servis za autentifikaciju uz odabrani protokol OAuth 2.0. | Zadatak, str. 2. | Odabrati pružatelja i način integracije te razraditi povezivanje vanjskog identiteta s korisničkom ulogom.         |
+| C-03 | Ograničenje | Obavijesti vlasnicima šalju se putem servisa Resend.                                   | Zadatak, str. 2. | Integrirati Resend i provjeriti dostavu poruka; nije dovoljno provjeriti samo stvaranje obavijesti unutar aplikacije. |
+| C-04 | Ograničenje | Korištenje platforme besplatno je za vlasnike vozila.                                               | Zadatak, str. 2. | Funkcionalnosti namijenjene vlasniku ne uvjetovati plaćanjem vlasničke pretplate.                                  |
+| C-05 | Ograničenje | Autoservisi plaćaju mjesečnu pretplatu kreditnom karticom putem servisa Stripe za napredne funkcionalnosti.              | Zadatak, str. 2. | Prije provedbe F-024 razjasniti opseg pretplate, ovlaštenog platitelja i način obrade plaćanja.                    |
 
-Ograničenje je uvjet koji tim mora poštovati; pretpostavka je uvjet na koji se tim oslanja i koji treba ponovno provjeravati.
+**Otvorena pitanja:**
 
-**Primjer — projektni kontekst CrisisMapa:**
+- Koje su funkcionalnosti napredne i dostupne samo uz pretplatu? Tko plaća u ime autoservisa te što se događa nakon isteka pretplate ili neuspjele naplate?
+- Koji se pružatelj identiteta koristi uz OAuth 2.0? Kako se potvrđuje uloga servisera ili voditelja te uspostavlja račun administratora?
+- Koji su osobni, kontaktni i poslovni podaci obavezni pri registraciji? Koje točno radnje obuhvaća upravljanje serviserima, korisnicima i autoservisima?
+- Kako vlasnik odabire autoservis? Tko potvrđuje ili otkazuje termin, koji su dopušteni prijelazi statusa i kako se rješava preklapanje termina?
+- Koje dodatne informacije pokreću obavijesti e-poštom? Kakav je postupak nakon odbijanja ponude dodatnih radova?
+- Koji su sadržaj i format računa i potvrde, ljestvica ocjenjivanja, razdoblja statistike i pokazatelji korištenja platforme?
 
-| ID | Ograničenje ili pretpostavka | Izvor | Posljedica ili način provjere |
-| --- | --- | --- | --- |
-| C-01 | Odobreni zadatak zahtijeva OAuth prijavu u sustav za uređivanje vlastitih prijava korisnika. | Odobreni zadatak  | Zaštićeno uređivanje projektirati oko odabranog pružatelja identiteta; provjeriti autorizirane i neautorizirane zahtjeve. |
-| AS-01 | Prijave koje se prikazuju na karti imaju uporabive koordinate. | Pretpostavka o podacima  | Pregledati ogledne i uvezene prijave; planirati prikaz prijava bez valjanih koordinata. |
-
-**Ograničenje nasuprot pretpostavci:** C-01 navodi obvezujuću odluku i njezin arhitekturni učinak; AS-01 je moguće provjeriti i može se pokazati netočnim. Nemojte kopirati C-01 ako OAuth nije dio stvarnog odobrenog zadatka. Projektni odgovor objasnite u arhitekturi bez prepisivanja ove tablice.
-
-</details>
-
----
+Odgovori se unose tek nakon stvarnog dogovora. Ako mijenjaju već dogovoreni zahtjev ili njegov opseg, razlog se bilježi u odjeljku 2.5.
 
 ## 2.5 Značajne promjene zahtjeva
 
-**Cilj:** Sačuvati razlog promjena koje mijenjaju dogovoreni opseg, prioritet ili kriterije prihvaćanja, uz istodobno održavanje prethodnih zahtjeva ažurnima.
+Ovaj odjeljak bilježi stvarne promjene zahtjeva, njihov izvor i razlog. Prema potvrdi člana tima, profesorov zadatak zasad nije dodatno izmijenjen. U ovoj početnoj analizi evidentiraju se dodatni nefunkcijski zahtjevi prema uputama člana tima; nije riječ o dodatnim zahtjevima nastavnice.
 
-| Datum | ID zahtjeva | Promjena i razlog | Dogovoreno s / dokaz |
-| --- | --- | --- | --- |
-|  |  |  |  |
+| Datum         | ID zahtjeva | Promjena i razlog                                                                                                                                                    | Dogovoreno s / dokaz                                                                                                  |
+| ------------- | ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| 24. 10. 2026. | NF-01       | Početnom popisu dodan je zahtjev za mobilnim prikazom na izričit zahtjev člana tima.                                                                                 | Izričit zahtjev člana tima za mobilnim prikazom tijekom razgovora o izradi ove analize.                               |
+| 24. 10. 2026. | NF-02–NF-08 | Potvrđeni su zahtjevi za kontrolu pristupa, HTTPS i poruke o pogreškama te dodani zahtjevi za pristupačnost, cjelovitost spremanja, obnovu podataka i zaštitu tajni. | Uputa člana tima tijekom uređivanja analize da se zahtjevi označe potvrđenima i dopune korisnim svojstvima kvalitete. |
 
-<details>
-<summary><strong>Primjer značajne promjene</strong></summary>
-
-**Primjer scenarija — odluka tijekom pregleda CrisisMapa:**
-
-| Datum | ID zahtjeva | Promjena i razlog | Dogovoreno s / dokaz |
-| --- | --- | --- | --- |
-| [Datum pregleda] | F-004, NF-01 | Dodati ručni odabir lokacije kada korisnik odbije geolokaciju preglednika; bez toga građanin ne može podnijeti prijavu kriznog događaja s lokacijom. | [Poveznica na stvarnu bilješku pregleda ili zadatak tima] |
-
-**Razlog promjene:** Zapis navodi zahvaćene stavke i objašnjava razlog iz perspektive korisnika, a zatim upućuje na dokaz odluke.  Nakon stvarne odluke ažurirajte trenutačne zahtjeve; stilska izmjena teksta ne zahtijeva zapis u dnevniku promjena. Trenutačni red zadataka držite u alatu za praćenje zadataka.
-
-</details>
-
----
+Naknadne dogovore treba potkrijepiti stvarnom bilješkom sastanka, zadatkom ili drugom dostupnom evidencijom.
 
 ## 2.6 Sljedivost zahtjeva
 
-**Cilj:** Osigurati dvosmjernu sljedivost — povezati zahtjeve s opisanim ponašanjem, dijelovima sustava koji ih ostvaruju te ispitivanjem ili drugom provjerom. 
-
-| ID zahtjeva | Obrazac uporabe / modul | Arhitekturna realizacija | Ispitivanje ili provjera |
-| --- | --- | --- | --- |
-| F-001 | [UC-001] | [Komponenta, modul ili drugo mjesto realizacije] | [ST-01, CT-01 ili druga provjera] |
-|  |  |  |  |
-
-<details>
-<summary><strong>Sljedivost zahtjeva do obrazaca uporabe i ispitivanja</strong></summary>
-
-**Primjer — poveznice zahtjeva CrisisMapa:**
+Tablica prikazuje planiranu realizaciju i provjere zahtjeva. Oznake obrazaca uporabe i ispitnih slučajeva dodat će se nakon njihove razrade.
 
 | ID zahtjeva | Obrazac uporabe / ponašanje | Arhitekturna realizacija | Ispitivanje / provjera |
 | --- | --- | --- | --- |
-| F-004 | UC-002 Podnošenje prijave kriznog događaja | Web-klijent; API za prijave; usluga za prijave | ST-01 Valjano podnošenje prijave; ST-02 Nedostaje obavezna lokacija; ST-03 Dopuštenje geolokacije odbijeno |
-| F-005 | Odabir primatelja obavijesti | Proces za obavijesti | CT-06 Primatelji obavijesti; potpuna dostava obavijesti nije pokrivena ovom provjerom |
-
-**Pokrivenost i dokazi:** CT-06 provjerava odabir primatelja za F-005, ali sam po sebi ne dokazuje da je obavijest stvarno dostavljena; ako projekt zahtijeva potpunu dostavu od početka do kraja, za taj dio treba postojati zasebna provjera. Svaki redak pokazuje gdje je zahtjev opisan kao ponašanje, gdje je ostvaren u sustavu i gdje se nalazi dokaz njegove provjere. Zahtjev ne mora imati zaseban obrazac uporabe ako ne opisuje korisničku interakciju; tada navedite relevantno ponašanje, arhitekturni element ili drugi prikladan način realizacije. U svojem projektu koristite stvarne nazive komponenata, modula i provjera iz dokumentacije i implementacije. Nedostajuću poveznicu ostavite praznom ili označite kao *na čekanju* uz kratak razlog. Stvarni rezultati ispitivanja bilježe se uz ispitne slučajeve; ova tablica pokazuje gdje ih pronaći.
-
-</details>
-
----
+| F-001–F-004, F-009 | Registracija, prijava i profili | React sučelje; modul korisnika; Spring Security; vanjska prijava putem OAuth 2.0; PostgreSQL | Uspješna i neuspješna prijava; pohrana profila i uloga; ponovna prijava bez dupliciranja računa |
+| F-005–F-007 | Vozila i servisni zahtjevi | React sučelje; moduli vozila i servisnih zahtjeva; PostgreSQL | Unos vozila; zahtjev s vrstom servisa i terminom; prikaz statusa; zabrana pristupa tuđim vozilima |
+| F-008 | Obavijesti vlasnicima | Modul obavijesti; Resend | Točan primatelj i sadržaj; dostava poruke; ponavljanje neuspjelog slanja |
+| F-010–F-014 | Radovi, dodatne ponude i završetak servisa | Sučelja servisera i vlasnika; moduli servisnih zahtjeva i ponuda; PostgreSQL | Pregled dodijeljenih zahtjeva; evidencija radova; prihvaćanje i odbijanje ponude; završni status i trošak |
+| F-015–F-019 | Upravljanje autoservisom | Sučelje voditelja; modul upravljanja autoservisom; PostgreSQL | Upravljanje serviserima; dodjela zahtjeva; promjena termina; povijest i statistika; odvajanje autoservisa |
+| F-020–F-023 | Računi, ocjene, povijest i potvrde | Sučelje vlasnika; modul servisne dokumentacije; PostgreSQL | Prikaz računa i povijesti; ocjena i komentar; preuzimanje potvrde; zabrana pristupa tuđim dokumentima |
+| F-024, F-026 | Pretplata i postavljanje cijene | Sučelje pretplate; modul pretplata; Stripe; PostgreSQL | Uspješna i neuspješna naplata; provjera i ponavljanje povratnih obavijesti; administratorska promjena cijene |
+| F-025, F-027, F-028 | Administracija platforme | Administratorsko sučelje; modul administracije; PostgreSQL | Upravljanje korisnicima i autoservisima; deaktivacija; pokazatelji korištenja; provjera ovlasti |
+| NF-01 | Mobilni prikaz | React komponente; prilagodljivi CSS rasporedi | Čitljivost i dostupnost kontrola; glavni tijekovi svih uloga na mobilnim uređajima |
+| NF-02 | Kontrola pristupa | Spring Security; provjere vlasništva i pripadnosti autoservisu | Neprijavljeni pristup; pogrešna uloga; dohvat i izmjena tuđih podataka kroz API |
+| NF-03 | Sigurna javna veza | Caddy i HTTPS; Docker Compose; Microsoft Azure | Valjan certifikat; HTTP preusmjeravanje; izravni portovi baze i backenda nisu javno dostupni |
+| NF-04 | Obrada pogrešaka | React validacija; Spring Boot validacija i obrada pogrešaka | Nevaljan unos; nedostupan poslužitelj; razumljive poruke bez lažne potvrde uspjeha |
+| NF-05 | Pristupačnost obrazaca | Semantičke React komponente; oznake polja; vidljiv fokus | Unos i slanje tipkovnicom; redoslijed fokusa; tekstualne poruke pogrešaka |
+| NF-06 | Cjelovitost spremanja | Spring Boot transakcije; PostgreSQL ograničenja | Pogreška tijekom spremanja poništava povezane promjene; uspješno spremanje je cjelovito |
+| NF-07 | Obnova podataka | PostgreSQL sigurnosne kopije; operativne skripte; Docker Compose na Azureu | Obnova u zasebnu bazu; usporedba zapisa, vrijednosti i veza |
+| NF-08 | Zaštita tajni | Poslužiteljska konfiguracija; filtriranje zapisnika | Zamjenske tajne nisu u praćenim datotekama, paketu sučelja ni zapisnicima |
 
 ## 2.7 Pregled zahtjeva
 
-**Cilj:** Zabilježiti važne povratne informacije o zahtjevima i odluke koje iz njih proizlaze na dvije formalne kontrolne točke projekta, u 7. i 14. tjednu.
+Ovdje se bilježe stvarne povratne informacije i odluke nakon pregleda zahtjeva. Predložak predviđa formalne kontrolne točke u 7. i 14. tjednu. Nisu dostavljene povratne informacije s tih pregleda pa se ne navode izmišljeni nalazi ni odluke. Oznaka „Nije evidentirano” ne potvrđuje je li sastanak održan.
 
-| Kontrolna točka | Povratna informacija ili nalaz | Odluka o zahtjevu ili opsegu |
-| --- | --- | --- |
-| Iteracija 1 | [Povratna informacija] | [Odluka; vidi odjeljak 2.5] |
-| Demo 2  | [Povratna informacija] | [Odluka; vidi odjeljak 2.5] |
-| Završni pregled | [Povratna informacija] | [Odluka; vidi odjeljak 2.5] |
+| Kontrolna točka | Povratna informacija ili nalaz                                 | Odluka o zahtjevu ili opsegu |
+| --------------- | -------------------------------------------------------------- | ---------------------------- |
+| Iteracija 1     | Nije evidentirano — dopuniti stvarnim nalazima nakon pregleda. | Nije evidentirano.           |
+| Demo 2          | Nije evidentirano — dopuniti stvarnim nalazima nakon pregleda. | Nije evidentirano.           |
+| Završni pregled | Nije evidentirano — dopuniti stvarnim nalazima nakon pregleda. | Nije evidentirano.           |
 
-<details>
-<summary><strong>Odluke o zahtjevima nakon pregleda</strong></summary>
-
-**Primjer scenarija — pregled zahtjeva CrisisMapa:**
-
-| Kontrolna točka | Povratna informacija ili nalaz | Odluka o zahtjevu ili opsegu |
-| --- | --- | --- |
-| Iteracija 1 | Demonstracija pokazuje da odbijanje pristupa lokaciji preglednika onemogućuje podnošenje prijave. | Dogovoriti ručni odabir lokacije; ažurirati F-004 i primjer NF-01 te razlog zabilježiti u odjeljku 2.5. |
-
-**Odluka povezana s povratnom informacijom:** Zapis povezuje opaženo ponašanje s konkretnom promjenom zahtjeva i izbjegava zapisnik cijelog sastanka. Zapišite samo stvarne povratne informacije i odluke za kontrolne točke. Konzultacije u nekom drugom tjednu ne stvaraju dodatnu obaveznu predaju.
-
-</details>
+Ako pregled dovede do promjene zahtjeva, ažuriraju se odgovarajući redci u ovom dokumentu i odjeljak 2.5.
 
 ---
 
->**Završna provjera:** Zahtjevi su aktualni, provjerljivi i povezani. Svaki važan zahtjev moguće je pratiti od njegova opisa i ponašanja preko mjesta realizacije u sustavu do odgovarajućeg ispitivanja ili druge provjere. Poveznice koriste stvarne identifikatore i nazive iz projektne dokumentacije.
-
+**Preostalo za dopunu:** potrebno je razjasniti otvorena pitanja navedena u odjeljku 2.4. Sljedivost se dopunjava stvarnim oznakama i poveznicama tijekom razrade i provedbe ispitivanja. Ovaj dokument ne tvrdi da su svi zahtjevi ostvareni ili provjereni.
