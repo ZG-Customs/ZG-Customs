@@ -37,7 +37,7 @@ Detaljan opseg, zahtjevi, obrasci uporabe, arhitektura i rezultati ispitivanja v
 
 ## Postavljanje (deployment)
 
-**Status:** početna React stranica, backend i baza pripremljeni su za javno postavljanje na Azure Ubuntu serveru preko Caddyja i HTTPS-a. Automatizacija objavljuje prihvaćene promjene iz `main` nakon uspješnog CI-ja.
+**Status:** početna React stranica javno je dostupna na Azure Ubuntu serveru preko Caddyja i HTTPS-a. Prikazuje podatke iz backenda i baze. Automatizacija svakih pet minuta provjerava `main` i nakon uspješnog CI-ja gradi i postavlja prihvaćene promjene; objava traje još nekoliko minuta.
 
 | Podatak | Trenutačno stanje |
 | --- | --- |
@@ -61,7 +61,7 @@ git clone git@github.com:ZG-Customs/ZG-Customs.git
 cd ZG-Customs
 ```
 
-Za pokretanje backenda i baze potreban je Docker s Composeom:
+Za pokretanje frontenda, backenda i baze potreban je Docker s Composeom:
 
 ```bash
 bash scripts/init-env.sh
@@ -85,7 +85,7 @@ Početna inačica koristi React / TypeScript / Vite, Java 21 / Spring Boot 4.1.2
 | **PostgreSQL** | Pohrana korisnika, vozila, autoservisa, zahtjeva i servisne povijesti. | Domenski podaci imaju jasne odnose i zahtijevaju dosljednost povezanih zapisa. |
 | **Docker / Docker Compose** | Ujednačeno pokretanje aplikacije i baze podataka. | Olakšava usklađivanje razvojnog okruženja članova tima i poslužitelja. |
 | **Microsoft Azure / Ubuntu** | Javno postavljanje aplikacije. | Omogućuje zasebno poslužiteljsko okruženje; tim treba preuzeti konfiguraciju i održavanje. |
-| **GitHub Actions** | Automatizirana izgradnja, provjere i kasnije postavljanje aplikacije. | Provjerava backend na stvarnoj testnoj bazi i gradi container. Server postavlja odobreni `main` nakon uspješnog CI-ja. |
+| **GitHub Actions** | Automatizirana izgradnja, provjere i postavljanje aplikacije. | Provjerava backend na stvarnoj testnoj bazi, gradi frontend i backend te provjerava web i API. Server postavlja odobreni `main` nakon uspješnog CI-ja. |
 
 **Vanjske integracije predviđene zadatkom:**
 
