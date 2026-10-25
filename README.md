@@ -89,9 +89,9 @@ Početna inačica koristi React / TypeScript / Vite, Java 21 / Spring Boot 4.1.2
 
 **Vanjske integracije predviđene zadatkom:**
 
-- Pružatelj identiteta za prijavu: **[DOPUNITI: odabrana usluga za OpenID Connect / OAuth 2.0]**.
-- Usluga za e-mail obavijesti: **[DOPUNITI: odabrana usluga]**.
-- Usluga za kartičnu naplatu pretplate: **[DOPUNITI: odabrana usluga i način demonstracije naplate]**.
+- Pružatelj identiteta za prijavu: **OAuth 2.0 (protokol za integraciju s pružateljem identiteta)**.
+- Usluga za e-mail obavijesti: **Resend**.
+- Usluga za kartičnu naplatu pretplate: **Stripe**.
 
 <a id="team-members"></a>
 
@@ -103,10 +103,10 @@ Tim **ZG Customs** ima **6 članova**. U tablici se navodi primarni fokus rada, 
 | --- | --- | --- | --- |
 | 1 | Rino Bago | [@rinobagoFER](https://github.com/rinobagoFER) | Voditelj tima + full stack developer |
 | 2 | Ivan Bartol | [@ivanbartol](https://github.com/ivanbartol) | DevOps, Git, CI/CD, postavljanje aplikacije + full stack pripomoć |
-| 3 | Jagor Jureković | [@jj56894](https://github.com/jj56894) | **[DOPUNITI: glavna uloga]** |
-| 4 | Potjeh Jureković | [@potjehjurekovic1](https://github.com/potjehjurekovic1) | **[DOPUNITI: glavna uloga]** |
-| 5 | Marijan Smiljanić | [@msmilj](https://github.com/msmilj) | **[DOPUNITI: glavna uloga]** |
-| 6 | Juraj Sviličić | [@sleepless-jura](https://github.com/sleepless-jura) | **[DOPUNITI: glavna uloga]** |
+| 3 | Jagor Jureković | [@jj56894](https://github.com/jj56894) | Full stack developer + vanjske integracije i pretplate |
+| 4 | Potjeh Jureković | [@potjehjurekovic1](https://github.com/potjehjurekovic1) | Backend developer za servisne zahtjeve i poslovne procese autoservisa |
+| 5 | Marijan Smiljanić | [@msmilj](https://github.com/msmilj) | Frontend developer za sučelje autoservisa i zaposlenika |
+| 6 | Juraj Sviličić | [@sleepless-jura](https://github.com/sleepless-jura) | Frontend developer za sučelje vlasnika vozila |
 
 **Voditelj tima: Rino Bago**
 
