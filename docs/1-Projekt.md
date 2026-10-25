@@ -29,8 +29,8 @@ Sustav naplate mjesečne pretplate kreditnom karticom za autoservise i administr
 **Isključeno:** Integracija sa skladištima rezervnih dijelova (praćenje lagera je interno unutar servisa). Mobilne aplikacije (sustav je u ovoj fazi ograničen na web platformu).
 
 **Vanjska ovisnost:** Vanjski servis za autentifikaciju korisnika (OAuth 2.0).
-Vanjski servis za naplatu i upravljanje pretplatama.
-Vanjski servis za slanje e-mail obavijesti.
+Vanjski servis za naplatu i upravljanje pretplatama (Stripe).
+Vanjski servis za slanje e-mail obavijesti (Resend).
 
 
 ## 1.4 Postojeći pristupi i opravdanost projekta
