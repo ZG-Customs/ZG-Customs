@@ -38,7 +38,9 @@ Svaki član koristi vlastiti SSH ključ i račun kad mu se odobri pristup. Priva
 ssh -i ~/.ssh/id_ed25519_ivanbartol ivanbartol@<SERVER_IP>
 ```
 
-Azure mrežno pravilo mora dopuštati SSH s trenutačne javne IP adrese korisnika. Nakon promjene mreže možda treba ažurirati pravilo. Za javnu aplikaciju koriste se HTTP/HTTPS portovi Caddyja; port baze i izravni backend ostaju dostupni samo lokalno ili tunelom.
+Azure mrežno pravilo mora dopuštati SSH vezu. Ako je pristup ograničen na određene javne IP adrese, nakon promjene mreže treba ažurirati dopuštene adrese. Za javnu aplikaciju koriste se HTTP/HTTPS portovi Caddyja; port baze i izravni backend ostaju dostupni samo lokalno ili tunelom.
+
+Linux račun `ivanbartol` i naziv njegova SSH ključa ne ovise o trenutačnom GitHub računu. Promjena GitHub računa ne zahtijeva preimenovanje server računa, putanja ili cron poslova. Ostali članovi u naredbama koriste vlastiti Linux račun i ključ.
 
 Za pristup API-ju i bazi pokrenite na vlastitom računalu i ostavite Terminal otvoren:
 
@@ -48,7 +50,7 @@ ssh -N -i ~/.ssh/id_ed25519_ivanbartol \
   ivanbartol@<SERVER_IP>
 ```
 
-Na Windows PowerShellu napišite tu naredbu u jednom retku. API je zatim dostupan na `http://localhost:18080/api/service-types`, a DBeaver se povezuje na `localhost:15432`, bazu `zg_customs`, korisnika `zg_customs` i privatnu aplikacijsku lozinku iz serverove `.env`. DBeaver ima i ugrađenu SSH tunnel opciju, pa zaseban terminalski tunel tada nije potreban.
+Na Windows PowerShellu napišite tu naredbu u jednom retku. API je zatim dostupan na `http://localhost:18080/api/service-types`, a DBeaver se povezuje na `localhost:15432`, bazu `zg_customs` i osobni PostgreSQL račun koji administrator zasebno dodjeljuje. SSH račun sam po sebi ne daje prijavu u bazu; aplikacijska lozinka ostaje privatna na serveru. DBeaver ima i ugrađenu SSH tunnel opciju, pa zaseban terminalski tunel tada nije potreban.
 
 ## Raspored datoteka na serveru
 
@@ -69,12 +71,14 @@ Server ne treba privatni GitHub ključ ni GitHub token za čitanje ovog javnog r
 ## Provjere i postavljanje iz GitHuba
 
 1. Promjene se šalju na radnu granu i otvara se PR prema `main`.
-2. GitHub Actions workflow **CI** pokreće integracijske testove na zasebnom PostgreSQL-u, provjerava skripte i Compose, gradi Docker image te pokreće aplikaciju sa svježe inicijaliziranom bazom i provjerava API.
+2. GitHub Actions workflow **CI** pokreće integracijske testove na zasebnom PostgreSQL-u, provjerava skripte i Compose te gradi Docker imageove backenda i React/Caddy frontenda. Zatim pokreće sva tri containera sa svježom bazom i provjerava API, naslovnicu, JavaScript datoteku i blokiranje javnog pristupa management endpointovima.
 3. Nakon pregleda i spajanja PR-a, CI se ponovno izvršava za točan commit na `main`.
 4. Server svakih pet minuta provjerava `main`. Postavlja samo commit s uspješno dovršenim CI workflowom iz ovog repozitorija, događaja `push`, za tu istu verziju koda.
-5. Server gradi image označen punim Git SHA-om, prije nadogradnje stvara kopiju postojeće baze i čeka da baza i backend budu zdravi. Tek tada zapisuje `current-sha`.
+5. Server gradi oba aplikacijska imagea označena punim Git SHA-om, prije nadogradnje stvara kopiju postojeće baze i čeka da PostgreSQL, backend i web budu zdravi. Nakon dodatne provjere spremnosti backenda i weba zapisuje `current-sha`.
 
-Ovo je postavljanje koje pokreće server: GitHub runner ne treba ulazni SSH pristup serveru. Kod se gradi na serveru; GHCR se u ovoj početnoj konfiguraciji ne koristi. Prvo probno postavljanje može se ručno izvesti iz radne grane, prije pregleda PR-a. Takva inačica služi provjeri infrastrukture; automatske nadogradnje prate samo `main`.
+Ovo je postavljanje koje pokreće server: GitHub runner ne treba ulazni SSH pristup serveru. Kod se gradi na serveru; GHCR se u ovoj početnoj konfiguraciji ne koristi. Objava nije trenutačna: nakon mergea treba pričekati završetak CI-ja, sljedeću provjeru servera i izgradnju. Automatizacija trenutačno postavlja svaki novi uspješno provjereni commit na `main`, uključujući promjene samo u dokumentaciji. Pri zamjeni containera moguć je kratak prekid rada.
+
+Brisanje radne grane ne mijenja objavljenu inačicu. Za novu funkcionalnost potreban je pregled i merge u `main`; lokalna izmjena ili push samo u radnu granu ne objavljuju se automatski.
 
 Primjer početne instalacije automatizacije, nakon provjere skripti:
 
@@ -83,9 +87,10 @@ mkdir -p "$HOME/apps/zg-customs"/{bin,state,logs,backups,releases}
 git clone https://github.com/ZG-Customs/ZG-Customs.git "$HOME/apps/zg-customs/repo"
 cd "$HOME/apps/zg-customs/repo"
 bash scripts/init-env.sh "$HOME/apps/zg-customs/.env"
-cp ops/deploy.sh ops/backup.sh ops/sync.py "$HOME/apps/zg-customs/bin/"
-bash "$HOME/apps/zg-customs/bin/deploy.sh" "$(git rev-parse HEAD)"
+cp ops/deploy.sh ops/backup.sh ops/sync.py ops/prepare-team-accounts.sh "$HOME/apps/zg-customs/bin/"
 ```
+
+Na **novom serveru**, prije prvog postavljanja uredite privatnu `.env` prema [konfiguraciji domene i HTTPS-a](frontend.md#azure-i-duckdns), usmjerite DNS i dopustite TCP portove 80 i 443. Početnu pregledanu inačicu postavite iz serverove mape `repo/` naredbom `bash "$HOME/apps/zg-customs/bin/deploy.sh" "$(git rev-parse HEAD)"`. Ovi koraci početne instalacije već su provedeni na postojećem serveru.
 
 U osobni `crontab -e`, uz očuvanje postojećih poslova, dodaju se:
 
@@ -96,7 +101,7 @@ U osobni `crontab -e`, uz očuvanje postojećih poslova, dodaju se:
 
 Primjer koristi korisnika `ivanbartol`; na drugom serveru promijenite putanje. Vrijeme dnevne kopije prati vremensku zonu servera. Promjene skripti u `ops/` treba nakon pregleda ponovno kopirati u `bin/`; sama objava novog commita ne zamjenjuje instalirani upravljački kod.
 
-Za ručnu provjeru automatizacije koristite `python3 ~/apps/zg-customs/bin/sync.py`. Neuspjeh GitHub API-ja ili nedovršen CI odgađaju postavljanje. Neuspjelo postavljanje označava se u `state/failed-sha`; automatizacija neće beskonačno ponavljati isti neuspjeli commit. Nakon otklanjanja uzroka pokrenite `deploy.sh` s punim SHA-om ili objavite ispravak kroz novi PR.
+Za ručno pokretanje automatizacije administrator može upotrijebiti `python3 ~/apps/zg-customs/bin/sync.py`; ta naredba može pokrenuti stvarno postavljanje, pa nije samo provjera stanja. Za čitanje trenutačne verzije koristite `cat ~/apps/zg-customs/state/current-sha`. Neuspjeh GitHub API-ja ili nedovršen CI odgađaju postavljanje. Neuspjelo postavljanje označava se u `state/failed-sha`; automatizacija neće beskonačno ponavljati isti neuspjeli commit. Nakon otklanjanja uzroka pokrenite `deploy.sh` s punim SHA-om ili objavite ispravak kroz novi PR.
 
 ## Upravljanje i sigurnosne kopije
 
@@ -136,8 +141,16 @@ Pričekajte da `pg_isready` u testnom containeru potvrdi spremnost prije testova
 
 Sljedeći koraci su OIDC prijava i autorizacija, poslovne funkcionalnosti i njihovo korisničko sučelje, vanjske integracije te kopije izvan servera. Trenutačni javni API daje samo vrste servisa, bez korisničkih podataka i operacija pisanja. Management endpointi ostaju dostupni samo lokalno/SSH tunelom. Ovo postavljanje samo po sebi ne ispunjava sve zahtjeve prvog ciklusa projekta.
 
-## Provjera početnog postavljanja — 23. 10. 2026.
+## Provjera javnog postavljanja — 27. 10. 2026.
 
-Na Azure serveru provjereni su API i PostgreSQL kroz SSH tunel, aplikacijski korisnik bez superuser ovlasti, očuvanje novog probnog zapisa nakon ponovnog stvaranja PostgreSQL containera te obnova sigurnosne kopije u zasebnu testnu bazu. Probni zapis uklonjen je nakon provjere. Privatna `.env` datoteka ima ovlasti `600`.
+Provjera je provedena čitanjem stanja servera i javnim HTTP zahtjevima, bez novog postavljanja:
 
-GitHub CI provjerava četiri backend integracijska testa, dva testa uvjeta automatske objave, shell skripte, izgradnju imagea te pokretanje cijele Compose konfiguracije sa svježom bazom. Uključen je cron za provjeru `main` grane svakih pet minuta i dnevnu kopiju u 03:30 UTC. Početna verzija ručno je postavljena iz infrastrukturne grane; prvo automatsko postavljanje nakon mergea tek treba potvrditi. Kopije se trenutačno čuvaju samo na serveru.
+- Aktivna inačica: `a2f9eeb383e40c566f477db2d89f66f668d25080`, jednaka provjerenom `main` i oznakama oba aplikacijska imagea.
+- Sva tri containera (`web`, `backend`, `postgres`) imaju status `healthy`; zapis automatizacije potvrđuje uspješno postavljanje te inačice.
+- [Javna naslovnica](https://zgcustoms.duckdns.org) i `/api/service-types` odgovaraju preko HTTPS-a; API vraća četiri vrste servisa. HTTP preusmjerava na HTTPS, a javni `/actuator/health` vraća `404`.
+- Web koristi javne TCP portove 80/443; baza 5432 i izravni backend 8080 vezani su na `127.0.0.1`.
+- Instalirane skripte `deploy.sh`, `backup.sh` i `sync.py` odgovaraju sadržaju u provjerenom `main`.
+- Cron provjerava `main` svakih pet minuta i izrađuje kopiju baze u 03:30 UTC. Posljednja zatečena kopija nastala je 27. 10. 2026. u 03:30 UTC; kopije se čuvaju na istom serveru.
+- Privatna `.env` ima ovlasti `600`. Osobni Linux računi pet članova postoje bez `sudo` i Docker grupa. Osobni PostgreSQL računi još nisu dodijeljeni; postoje prijavni računi `postgres` i `zg_customs`.
+
+Pri početnom postavljanju prethodno su provjereni očuvanje probnog zapisa nakon ponovnog stvaranja PostgreSQL containera i obnova sigurnosne kopije u zasebnu testnu bazu. Te provjere nisu ponovno izvođene pri ovom usklađivanju dokumentacije. Ovaj zapis opisuje stanje na navedeni datum; buduće objave prate se kroz `state/current-sha` i zapise automatizacije.

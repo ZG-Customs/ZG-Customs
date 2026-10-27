@@ -35,11 +35,11 @@ Preglednik → Caddy (React datoteke i HTTPS)
                    └→ /api/* → Spring Boot → PostgreSQL
 ```
 
-Razvojni Vite poslužitelj ne koristi se za javno posluživanje aplikacije. Za promjenu frontenda izrađuje se novi Docker image, jednako kao za backend. Oba imagea označena su Git commitom i objavljuju se zajedno nakon pregleda PR-a i uspješnog CI-ja na `main`.
+Razvojni Vite poslužitelj ne koristi se za javno posluživanje aplikacije. Za promjenu frontenda izrađuje se novi Docker image, jednako kao za backend. Oba imagea označena su Git commitom i objavljuju se zajedno nakon pregleda PR-a i uspješnog CI-ja na `main`. Server provjerava novu inačicu svakih pet minuta, nakon čega slijedi izgradnja i zamjena containera. Frontend developer za taj postupak ne treba SSH pristup serveru.
 
 ## Azure i DuckDNS
 
-Domena je `zgcustoms.duckdns.org`, s A zapisom koji pokazuje na javnu IP adresu Azure VM-a. Na serveru su u privatnoj `~/apps/zg-customs/.env` potrebne ove dodatne vrijednosti:
+Aplikacija je dostupna na **[https://zgcustoms.duckdns.org](https://zgcustoms.duckdns.org)**. A zapis domene pokazuje na javnu IP adresu Azure VM-a. Na serveru su u privatnoj `~/apps/zg-customs/.env` postavljene ove vrijednosti; za lokalni razvoj zadržavaju se zadane vrijednosti iz `.env.example`:
 
 ```dotenv
 SITE_ADDRESS=zgcustoms.duckdns.org
@@ -48,10 +48,22 @@ WEB_HTTP_PORT=80
 WEB_HTTPS_PORT=443
 ```
 
-Azure NSG treba dopuštati dolazni TCP promet na portovima `80` i `443`. Ako je Ubuntu firewall uključen, isto treba dopustiti i ondje. Caddy automatski pribavlja i obnavlja TLS certifikat te HTTP preusmjerava na HTTPS. Certifikati se čuvaju u volumeu `zg-customs_caddy_data`, koji treba očuvati pri nadogradnjama.
+Za javno postavljanje Azure NSG mora dopuštati dolazni TCP promet na portovima `80` i `443`; za postojeći server to je već omogućeno. Ako je Ubuntu firewall uključen, isto treba dopustiti i ondje. Caddy automatski pribavlja i obnavlja TLS certifikat te HTTP preusmjerava na HTTPS. Certifikati se čuvaju u volumeu `zg-customs_caddy_data`, koji treba očuvati pri nadogradnjama.
 
 PostgreSQL `5432` i izravni backend `8080` ostaju vezani na `127.0.0.1`. Javni Caddy ne prosljeđuje `/actuator` endpointove. Prije dodavanja korisničkih podataka i operacija pisanja treba implementirati autentifikaciju i autorizaciju u backendu.
 
-DuckDNS token nije potreban za ovo postavljanje i ne pohranjuje se u repozitorij. Ako se javna IP adresa servera promijeni, treba ažurirati A zapis. Nakon prvog otvaranja domene provjerite HTTPS i prikaz vrsta servisa. CI provjerava izgrađene datoteke, API preko Caddyja i nedostupnost management endpointova na javnom web ulazu.
+Ako administrator naknadno promijeni te varijable u serverovoj `.env`, promjene se ne primjenjuju same. Za ponovno stvaranje samo web containera postojeće objavljene inačice koristi se:
+
+```bash
+root="$HOME/apps/zg-customs"
+export APP_VERSION="$(cat "$root/state/current-sha")"
+docker compose --project-name zg-customs --env-file "$root/.env" \
+  -f "$root/releases/$APP_VERSION/compose.yaml" \
+  up -d --no-deps --no-build --wait web
+```
+
+To je administracijska promjena konfiguracije. Za promjene React koda koristi se uobičajeni PR i objava iz `main`.
+
+DuckDNS token nije potreban za ovo postavljanje i ne pohranjuje se u repozitorij. Ako se javna IP adresa servera promijeni, treba ažurirati A zapis. Javni HTTPS, dohvat četiriju vrsta servisa i blokiranje management endpointova provjereni su 27. 10. 2026.; detalji su u [zapisu provjere postavljanja](deployment.md#provjera-javnog-postavljanja--27-10-2026). CI provjerava izgrađene datoteke, API preko Caddyja i nedostupnost management endpointova na javnom web ulazu.
 
 Izvori: [Vite — lokalni razvoj](https://vite.dev/guide/), [Vite — izgradnja i objava](https://vite.dev/guide/static-deploy.html), [Caddy — automatski HTTPS](https://caddyserver.com/docs/quick-starts/https).
