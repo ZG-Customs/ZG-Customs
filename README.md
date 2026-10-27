@@ -31,13 +31,13 @@ ZG Customs povezuje vlasnike vozila, servisere i voditelje autoservisa kroz zaje
 
 Predviđeni statusi servisnog zahtjeva su: **zatražen**, **potvrđen**, **vozilo zaprimljeno**, **servis u tijeku**, **čeka odobrenje**, **završen** i **otkazan**. Dopušteni prijelazi između statusa razradit će se u analizi zahtjeva i modelima ponašanja.
 
-Detaljan opseg, zahtjevi, obrasci uporabe, arhitektura i rezultati ispitivanja vodit će se u [projektnoj dokumentaciji](docs/Home.md). Stranice dokumentacije trenutačno sadrže predloške koje tim treba prilagoditi projektu.
+Detaljan opseg, zahtjevi, obrasci uporabe, arhitektura i rezultati ispitivanja vodit će se u [projektnoj dokumentaciji](docs/Home.md). Dokumentacija se postupno dopunjuje i usklađuje s implementacijom; preostale predloške tim treba prilagoditi projektu.
 
 <a id="deployment"></a>
 
 ## Postavljanje (deployment)
 
-**Status:** početna React stranica, backend i baza pripremljeni su za javno postavljanje na Azure Ubuntu serveru preko Caddyja i HTTPS-a. Automatizacija objavljuje prihvaćene promjene iz `main` nakon uspješnog CI-ja.
+**Status:** početna React stranica, backend i baza javno su postavljeni na Azure Ubuntu serveru preko Caddyja i HTTPS-a. Automatizacija svakih pet minuta provjerava `main` i objavljuje novu inačicu nakon uspješnog CI-ja. Javni pristup i aktivna inačica provjereni su **27. 10. 2026.**; [zapis provjere](docs/deployment.md#provjera-javnog-postavljanja--27-10-2026) navodi provjereni commit.
 
 | Podatak | Trenutačno stanje |
 | --- | --- |
@@ -48,7 +48,7 @@ Detaljan opseg, zahtjevi, obrasci uporabe, arhitektura i rezultati ispitivanja v
 
 **Planirani scenarij demonstracije:** vlasnik prijavljuje vozilo i traži termin, voditelj potvrđuje zahtjev i dodjeljuje servisera, a serviser evidentira radove. Vlasnik zatim prati status i pregledava završeni servis.
 
-Detalji infrastrukture, konfiguracije i objave dokumentirat će se u [vodiču za postavljanje, instalaciju i konfiguraciju](docs/6-Postavljanje-instalacija-i-konfiguracija.md).
+Detalji infrastrukture, konfiguracije i objave opisani su u [vodiču za postavljanje, instalaciju i konfiguraciju](docs/6-Postavljanje-instalacija-i-konfiguracija.md).
 
 <a id="quick-start"></a>
 
@@ -61,7 +61,7 @@ git clone git@github.com:ZG-Customs/ZG-Customs.git
 cd ZG-Customs
 ```
 
-Za pokretanje backenda i baze potreban je Docker s Composeom:
+Za pokretanje frontenda, backenda i baze potreban je Docker s Composeom:
 
 ```bash
 bash scripts/init-env.sh
@@ -85,7 +85,7 @@ Početna inačica koristi React / TypeScript / Vite, Java 21 / Spring Boot 4.1.2
 | **PostgreSQL** | Pohrana korisnika, vozila, autoservisa, zahtjeva i servisne povijesti. | Domenski podaci imaju jasne odnose i zahtijevaju dosljednost povezanih zapisa. |
 | **Docker / Docker Compose** | Ujednačeno pokretanje aplikacije i baze podataka. | Olakšava usklađivanje razvojnog okruženja članova tima i poslužitelja. |
 | **Microsoft Azure / Ubuntu** | Javno postavljanje aplikacije. | Omogućuje zasebno poslužiteljsko okruženje; tim treba preuzeti konfiguraciju i održavanje. |
-| **GitHub Actions** | Automatizirana izgradnja, provjere i kasnije postavljanje aplikacije. | Provjerava backend na stvarnoj testnoj bazi i gradi container. Server postavlja odobreni `main` nakon uspješnog CI-ja. |
+| **GitHub Actions** | Automatizirani testovi i izgradnja aplikacije. | Provjerava backend na stvarnoj testnoj bazi, gradi frontend i backend te provjerava cijelu aplikaciju kroz Caddy. Server zasebno postavlja odobreni `main` nakon uspješnog CI-ja. |
 
 **Vanjske integracije predviđene zadatkom:**
 
@@ -102,7 +102,7 @@ Tim **ZG Customs** ima **6 članova**. U tablici se navodi primarni fokus rada, 
 | # | Ime i prezime | GitHub | Glavna uloga ili doprinos |
 | --- | --- | --- | --- |
 | 1 | Rino Bago | [@rinobagoFER](https://github.com/rinobagoFER) | Voditelj tima + full stack developer |
-| 2 | Ivan Bartol | [@ivanbartol](https://github.com/ivanbartol) | DevOps, Git, CI/CD, postavljanje aplikacije + full stack pripomoć |
+| 2 | Ivan Bartol | [@slanacexe](https://github.com/slanacexe) | DevOps, Git, CI/CD, postavljanje aplikacije + full stack pripomoć |
 | 3 | Jagor Jureković | [@jj56894](https://github.com/jj56894) | Full stack developer + vanjske integracije i pretplate |
 | 4 | Potjeh Jureković | [@potjehjurekovic1](https://github.com/potjehjurekovic1) | Backend developer za servisne zahtjeve i poslovne procese autoservisa |
 | 5 | Marijan Smiljanić | [@msmilj](https://github.com/msmilj) | Frontend developer za sučelje autoservisa i zaposlenika |
@@ -114,10 +114,10 @@ Uloge se mogu mijenjati tijekom projekta. Stvarni doprinosi prate se kroz zadatk
 
 ## Doprinos projektu
 
-Promjene se razvijaju u granama oblika `<vrsta>/<username>-<zadatak>`, primjerice `docs/ivanbartol-readme`. Nakon commita i pusha radne grane otvara se pull request (PR) prema `main`.
+Promjene se razvijaju u granama oblika `<vrsta>/<oznaka-člana>-<zadatak>`, primjerice `docs/ivanbartol-deployment-update`. Oznaka člana ostaje ista i pri promjeni GitHub računa. Nakon commita i pusha radne grane otvara se pull request (PR) prema `main`.
 
 - **Approval (odobrenje)** potvrđuje da je netko pregledao promjene i prihvaća ih. Potrebno je jedno odobrenje drugog člana s ovlasti Write/Admin; autor ne može odobriti vlastiti PR.
-- **Merge (spajanje)** uključuje odobrene promjene u `main`. Nakon ispunjenih uvjeta pregleda mogu ga napraviti samo administratori, trenutačno voditelj `@rinobagoFER` te `@ivanbartol`.
+- **Merge (spajanje)** uključuje odobrene promjene u `main`. Nakon ispunjenih uvjeta pregleda mogu ga napraviti samo administratori, trenutačno voditelj `@rinobagoFER` te `@slanacexe` (Ivan Bartol).
 
 Izravni push u `main` nije dopušten. Nove izmjene nakon odobrenja zahtijevaju ponovni pregled. Uz promjenu funkcionalnosti ažuriraju se pripadajuća dokumentacija i testovi.
 

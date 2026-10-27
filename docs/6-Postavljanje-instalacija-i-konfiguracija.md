@@ -1,187 +1,79 @@
-> **ZG Customs — trenutačne upute:** [Docker, PostgreSQL, SSH i Azure postavljanje](deployment.md). Nastavni primjeri u ostatku ove stranice još nisu prilagođeni projektu; primjeri s Renderom i Node.js-om ne opisuju trenutačnu infrastrukturu.
-
 # 6. Postavljanje, instalacija i konfiguracija
 
-**Cilj:** Detaljno dokumentirati topologiju izvođenja, postupak lokalne instalacije i konfiguracije iz izvornog koda te način javnog postavljanja i administracije programa. [README](../README.md) navodi javnu adresu i sažeti postupak lokalnog pokretanja; ova stranica donosi potpun inženjerski postupak koji osigurava točnu ponovljivost na drugom računalu.
-
-Zamijenite oglednu topologiju, naredbe i postavke onima koje vaš tim stvarno koristi (u primjeru se koristi Render; dokumentirajte platformu odabranu za vaš projekt).
-
----
+Ovo poglavlje opisuje stvarno postavljenu početnu inačicu sustava **ZG Customs**, provjerenu 27. 10. 2026. Javno je dostupna na [https://zgcustoms.duckdns.org](https://zgcustoms.duckdns.org). Frontend prikazuje četiri vrste servisa dohvaćene iz backenda i baze. Prijava korisnika i poslovne funkcionalnosti još nisu implementirane.
 
 ## 6.1 Prikaz razmještaja
 
-**Cilj:** Prikazati okruženja izvođenja, raspodijeljene dijelove programa, spremište podataka i relevantne vanjske usluge. Njihovu komunikaciju i mrežne protokole prikažite jednim UML dijagramom razmještaja. Dok dijagram komponenata iz Poglavlja 4 prikazuje logičke odgovornosti, dijagram razmještaja pokazuje gdje se izvršni artefakti fizički ili virtualno izvode.
+Sustav se izvodi na jednoj Azure virtualnoj mašini s Ubuntuom 24.04 LTS i približno 4 GB RAM-a. Docker Compose upravlja trima containerima:
 
-**Dijagram razmještaja:** [Ugradite čitljivu sliku UML dijagrama razmještaja.]  
-**PlantUML izvor:** [Poveznica na odgovarajuću `.puml` datoteku.]  
-**Javno dostupna aplikacija:** [Poveznica na javnu adresu navedenu u README-u ili na njegov odjeljak o postavljanju.]
+| Dio | Izvršavanje i odgovornost | Komunikacija |
+| --- | --- | --- |
+| Korisnički preglednik | Izvršava izgrađeni React/TypeScript kod. | HTTPS prema `zgcustoms.duckdns.org:443`. |
+| `web` | Caddy poslužuje statičke datoteke iz `frontend/dist` i upravlja HTTPS-om. | Javni TCP 80/443; HTTP preusmjerava na HTTPS, a `/api/*` prosljeđuje na `backend:8080`. |
+| `backend` | Java 21 / Spring Boot 4.1.2 obrađuje zahtjeve i pokreće Flyway migracije. | HTTP u Docker mreži; JDBC prema `postgres:5432`. |
+| `postgres` | PostgreSQL 18.6 čuva aplikacijske podatke u trajnom volumeu. | Dostupan backendu u Docker mreži i administratoru kroz SSH tunel. |
 
-*Pravila izrade prikaza:*
-* Označite stvarne čvorove na kojima se program izvodi (korisnički uređaj, poslužitelj, baza podataka) i protokole među njima.
-* Bazu podataka ili vanjskog pružatelja usluga uključite samo ako ih postavljeni program stvarno koristi.
-* Razvojno računalo nije javni poslužitelj; prikažite isključivo produkcijsko okruženje.
-* Ako se planirana arhitektura tijekom implementacije promijenila, ovdje prikažite stvarni razmještaj i odgovarajuće ažurirajte opis arhitekture.
+Na VM-u su portovi 8080 i 5432 vezani samo na `127.0.0.1`. Preglednik ne pristupa bazi izravno. Caddy javno blokira `/actuator` endpointove. Podaci baze i TLS certifikati ostaju u zasebnim Docker volumeima pri nadogradnji.
 
-<details>
-<summary><strong>Primjer: Javno postavljanje programa za prijave i obavijesti </strong></summary>
+Konfiguracija razmještaja nalazi se u [`compose.yaml`](../compose.yaml) i [`frontend/Caddyfile`](../frontend/Caddyfile). DuckDNS omogućuje naziv javne domene, a GitHub čuva izvorni kod i rezultate CI-ja. Planirane integracije prijave, Resenda i Stripea još nisu povezane s ovom inačicom.
 
-**Primjer — CrisisMap:**
-Predloženi klijentski dio gradi se kao statičko web-mjesto. Poslužiteljska web-usluga obrađuje prijave i asinkrono šalje obavijesti unutar **iste postavljene poslužiteljske aplikacije**. PostgreSQL sprema podatke prijava, pružatelj kartografskih usluga isporučuje kartografske pločice pregledniku, a Firebase Cloud Messaging prima zahtjeve za slanje upozorenja iz poslužiteljskog dijela. Primjer pretpostavlja da obavijesti pripadaju opsegu tog konkretnog projekta.
-
-![UML dijagram razmještaja sustava CrisisMap](./assets/diagrams/6-1-crisismap-DD.svg)
-
-**Slika 6.1. UML dijagram razmještaja sustava CrisisMap**
-
-**PlantUML izvor:** [izvor](./puml/6-1-crisismap-DD.puml)
-**Analiza razmještaja:**
-* **Korisnički uređaj:** Web-preglednik izvršava klijentski kod nakon preuzimanja statičkih datoteka.
-* **Poslužiteljski čvor:** Poslužiteljski API i pozadinski zadaci nalaze se unutar jedne usluge (jednog izvršnog procesa).
-* **Baza podataka:** Veza s bazom uspostavlja se isključivo iz poslužiteljskog dijela putem interne mreže, a nikada izravno iz klijentskog preglednika.
-* **Vanjske usluge:** Pružatelj kartografskih usluga i pružatelj obavijesti nalaze se izvan infrastrukture koju postavlja tim.
-</details>
-
----
+**Za dopunu prije službene predaje:** UML dijagram razmještaja i njegov PlantUML izvor prema opisanoj stvarnoj topologiji.
 
 ## 6.2 Lokalna instalacija i konfiguracija
 
-**Cilj:** Omogućiti novom članu tima ili ocjenjivaču da iz čiste radne kopije repozitorija instalira i lokalno pokrene cijeli programski sustav, uključujući bazu podataka i početne podatke.
+Cijela aplikacija pokreće se pomoću Gita i Dockera s Composeom. Na Windowsu Docker Desktop treba koristiti Linux containere; za inicijalizacijsku skriptu koristi se Git Bash. [Brzi početak u README-u](../README.md#quick-start) sadrži naredbe, a [vodič za razvoj](deployment.md#lokalno-pokretanje) opisuje alternativu preko HTTPS kloniranja, Windows i razvoj iz IDE-a.
 
-1. **Preduvjeti i preuzimanje izvornog koda:**
-   * Navedite podržane verzije izvršnog okruženja, upravitelja paketa, baze podataka i CLI alata.
-   * Navedite točne naredbe za kloniranje repozitorija i radni direktorij; naznačite koje se naredbe pokreću iz korijena repozitorija, a koje iz poddirektorija.
-2. **Ovisnosti i konfiguracijske varijable:**
-   * Navedite točne naredbe za instalaciju ovisnosti za klijentski i poslužiteljski dio.
-   * Povežite predložak `.env.example`, opišite ulogu svake varijable, koje vrijednosti smiju biti javne i kako ovlašteni korisnik dobiva tajne vrijednosti.
-   * *Upozorenje:* Nikada ne objavljujte stvarne pristupne podatke i tajne ključeve.
-3. **Inicijalizacija baze podataka i migracije:**
-   * Navedite redoslijed naredbi za stvaranje lokalne baze, dodjelu korisničkih prava i izvođenje migracija sheme; navedite izvode li se migracije ručno ili pri pokretanju te stvarne putanje verzioniranih skripti.
-   * Objasnite kako se učitavaju nužni početni podaci (samo oni nužni) i kako spriječiti višestruko izvođenje početnih skripti.
-4. **Pokretanje i verifikacija:**
-   * Prikažite točan redoslijed pokretanja procesa i lokalne mrežne adrese na kojima su dostupni.
-   * Navedite točan korak provjere (npr. slanje probnog zahtjeva ili pregled u pregledniku) koji dokazuje da klijentski dio uspješno komunicira s poslužiteljskim API-jem i bazom te da se važni podaci trajno pohranjuju.
-   * Navedite gdje čitatelj može provjeriti pogreške ako neki korak ne uspije.
+Za rad izvan containera koriste se Java 21 i uključeni Maven Wrapper za backend te Node.js 24 i `npm ci` za frontend. [Frontend vodič](frontend.md#lokalni-razvoj) opisuje Vite i automatsko osvježavanje lokalnog prikaza.
 
-Uključite samo korake koje aplikacija stvarno zahtijeva. Ako README već sadrži potpun i ponovljiv postupak, povežite ga i ovdje dodajte samo ono što nedostaje umjesto održavanja dviju potpunih kopija istih uputa.
+### Konfiguracijske varijable
 
-<details>
-<summary><strong>Primjer: Instalacija programa s lokalnom PostgreSQL bazom (CrisisMap)</strong></summary>
+[`scripts/init-env.sh`](../scripts/init-env.sh) stvara lokalnu `.env` s nasumičnim lozinkama i odbija prepisati postojeću datoteku. [`.env.example`](../.env.example) sadrži samo ogledne lokalne vrijednosti. Privatne vrijednosti za zajednički server čuva administrator izvan repozitorija.
 
-Ovaj nastavni primjer koristi klijentski dio temeljen na radnom okviru React/Vite (`frontend/`), poslužiteljski dio temeljen na Node.js okruženju (`backend/`) i PostgreSQL bazu podataka.
+| Varijabla | Namjena |
+| --- | --- |
+| `POSTGRES_PASSWORD` | Tajna lozinka administratorskog PostgreSQL računa; postavlja se pri inicijalizaciji baze. |
+| `DB_PASSWORD` | Tajna lozinka aplikacijskog računa `zg_customs`; koriste je inicijalizacija baze i backend. |
+| `DB_PORT`, `API_PORT` | Lokalni portovi baze i backenda; zadano 5432 i 8080. |
+| `SITE_ADDRESS` | Caddy adresa; lokalno `:80`, na serveru `zgcustoms.duckdns.org`. |
+| `WEB_BIND` | Adresa za objavu web portova: lokalno `127.0.0.1`, javno `0.0.0.0`. |
+| `WEB_HTTP_PORT`, `WEB_HTTPS_PORT` | Web portovi: lokalno 8088/8443, na serveru 80/443. |
+| `DB_URL`, `DB_USER` | Backendova JDBC adresa i korisnik; Compose ih postavlja za internu Docker mrežu. Za razvoj iz IDE-a koriste se lokalna adresa i lokalni račun. |
+| `APP_VERSION` | Oznaka Docker imageova; skripta za objavu postavlja puni Git SHA. Lokalno je zadano `local`. |
 
-#### 1. Inicijalizacija baze podataka
+Frontend poziva relativni `/api` na istom ishodištu. Nema zasebne varijable `VITE_API_BASE_URL` niti tajnih podataka baze u klijentskoj konfiguraciji.
 
-U terminalu stvorite razvojnu bazu podataka i pokrenite početnu SQL skriptu iz korijena repozitorija:
+### Baza i provjera rada
 
-```bash
-createdb crisismap_dev
-psql -d crisismap_dev -f backend/db/001_create_schema.sql
-psql -d crisismap_dev -c '\dt'
-```
+Pri prvom pokretanju praznog PostgreSQL volumea [`init-app-user.sh`](../ops/postgres/init-app-user.sh) stvara aplikacijski račun bez superuser ovlasti. Backend zatim primjenjuje [Flyway migracije](../backend/src/main/resources/db/migration/). Početna migracija stvara tablicu vrsta servisa i četiri početna zapisa. Flyway evidentira primijenjene migracije; one se ne ponavljaju pri svakom pokretanju. Hibernate provjerava postojeću shemu.
 
-Verzionirana SQL datoteka u ovom primjeru stvara tablice u **novoj** bazi podataka; provjera `\dt` treba ih prikazati. Konfigurirajte lokalni PostgreSQL račun koji može koristiti tu shemu; ako je riječ o zasebnom računu, zabilježite naredbe za njegovo stvaranje i dodjelu prava. Node.js poslužiteljski dio čita `DATABASE_URL`: lokalno ga postavite tako da se putem PostgreSQL URL-a povezuje na `crisismap_dev`, a potrebne pristupne podatke čuvajte u lokalnoj postavci koja se ne uključuje u repozitorij. Nemojte objaviti puni URL veze ako sadrži lozinku. Ako druga aplikacija koristi automatske migracije, pokrenite je prema uputama i provjerite jesu li migracije provedene umjesto zasebnog izvršavanja skripte početne sheme. Ako ogledne prijave zahtijevaju početne podatke, navedite stvarnu naredbu tog projekta i objasnite kada se treba koristiti.
+Nakon pokretanja cijelog sustava otvorite `http://localhost:8088` i provjerite prikaz četiriju vrsta servisa. `http://localhost:8080/actuator/health/readiness` treba vratiti stanje `UP`. Popis na stranici dohvaća se kroz Caddy i backend iz PostgreSQL-a, pa provjerava vezu svih triju dijelova. U ovoj inačici još nema poslovnih operacija unosa kroz sučelje.
 
-#### 2. Konfiguracija i pokretanje poslužiteljskog dijela (backend)
-
-U prvom terminalu postavite ovisnosti, pripremite varijable okruženja i pokrenite poslužitelj:
-
-```bash
-cd backend
-npm ci
-cp .env.example .env
-# Uredite .env datoteku: postavite DATABASE_URL=postgresql://localhost:5432/crisismap_dev
-npm start
-```
-
-*Poslužiteljski API pokreće se i sluša na:* `http://localhost:8080`
-
-#### 3. Pokretanje klijentskog dijela (frontend)
-
-U drugom terminalu instalirajte ovisnosti klijenta i pokrenite razvojni poslužitelj:
-
-```bash
-cd frontend
-npm ci
-VITE_API_BASE_URL=http://localhost:8080 npm run dev
-```
-
-*Klijentska aplikacija dostupna je u pregledniku na:* `http://localhost:5173`
-
-#### 4. Provjera rada sustava
-
-Otvorite adresu klijenta koju ispiše Vite, podnesite probnu prijavu s odabranom lokacijom, provjerite prikazuje li se potvrda s novim identifikatorom prijave i ponovno je dohvatite. Samo učitavanje početne stranice klijenta bez slanja i dohvata podataka ne dokazuje ispravnost rada poslužiteljskog dijela i baze podataka.
-
-Ako se adresa poslužiteljskog dijela razlikuje od `http://localhost:8080`, koristite adresu koju aplikacija stvarno ispiše. Ako podnošenje ne uspije, pregledajte API zahtjev u pregledniku i zapis poslužiteljskog dijela; ako pokretanje ne uspije, provjerite postavke veze s bazom podataka i je li shema stvorena. Nemojte kopirati putanje ili naredbe iz ovog primjera ako se vaš repozitorij razlikuje.
-
-**Analiza primjera:** Postupak ima jasan redoslijed: stvoriti bazu podataka, uspostaviti shemu i pristup, konfigurirati veze, pokrenuti oba procesa i provjeriti spremljenu prijavu. Naredbe i očekivani rezultati dovoljno su konkretni da se može dijagnosticirati nepotpuno postavljanje. Oni nadopunjuju kratki put iz README-a do pokrenute aplikacije umjesto da tvrde kako samo učitana web-stranica dokazuje uspješnu instalaciju.
-</details>
-
----
+Za dijagnostiku koristite `docker compose ps` i `docker compose logs --tail=100 web backend postgres` iz korijena lokalne kopije. Postupak [testiranja backenda](deployment.md#testiranje-backenda) koristi zasebnu testnu bazu. Podatke zajedničke baze mijenjaju verzionirane migracije; ne briše se volume radi resetiranja ili promjene lozinke.
 
 ## 6.3 Javno postavljanje i administracija
 
-**Cilj:** Dokumentirati točne korake za ponovljivo postavljanje cjelovitog programskog sustava na produkcijsku infrastrukturu u oblaku, uključujući smještenu bazu podataka i veze među postavljenim dijelovima. Kada je jasnije, povežite konfiguraciju koja već postoji u Gitu umjesto njezina prepisivanja.
+Frontend i backend grade se iz istog commita pomoću njihovih [Dockerfileova](../frontend/Dockerfile) ([backend](../backend/Dockerfile)). Izgradnja frontenda izvršava `npm ci` i `npm run build`; izgrađene datoteke poslužuje Caddy, a Vite razvojni poslužitelj ne pokreće se na javnom serveru. Backend se pakira Maven Wrapperom i izvršava kao Java aplikacija.
 
-| **Postavljeni podsustav** | **Infrastruktura i izvor koda** | **Naredbe izgradnje i pokretanja** | **Konfiguracija i varijable okruženja** |
-| --- | --- | --- | --- |
-| **Klijentski dio** | [Usluga smještaja, grana i putanja mape] | [Naredba izgradnje i izlazni direktorij] | [Javne varijable vidljive pregledniku] |
-| **Poslužiteljski dio** | [Usluga smještaja, grana i putanja mape] | [Naredba izgradnje i naredba pokretanja] | [Port, veza s bazom podataka, tajni ključevi] |
-| **Baza podataka** | [Upravljana baza podataka i regija smještaja] | [Mehanizam izvođenja migracija sheme i trenutak uspostavljanja sheme] | [Zaštićeni pristupni podaci baze] |
+### Početna instalacija i konfiguracija domene
 
-**CI i CD:** Kontinuirana integracija (engl. *continuous integration*, CI) automatizira izgradnju i provjere pri integriranju promjena. Kratica CD može označavati dva različita postupka. **Kontinuirana isporuka** (engl. *continuous delivery*) održava provjerenu inačicu spremnom za postavljanje, ali postavljanje u produkciju može zahtijevati ručnu odluku. **Kontinuirano postavljanje** (engl. *continuous deployment*) automatski postavlja uspješno provjerenu promjenu u produkciju. Navedite postupak koji projekt stvarno koristi; nemojte koristiti oznaku CI/CD samo zato što alat podržava automatizaciju.
-U tablici i opisu navedite **nazive i svrhu** varijabli, gdje ovlašteni održavatelj dobiva njihove vrijednosti i kojoj se usluzi svaka postavlja. Razlikujte konfiguraciju vidljivu pregledniku od tajnih podataka poslužiteljskog dijela.
+Administrator priprema Ubuntu, Git, Docker s Composeom i SSH pristup te serverovu mapu `~/apps/zg-customs/`. [Operativni vodič](deployment.md#provjere-i-postavljanje-iz-githuba) sadrži naredbe za kloniranje, privatnu `.env`, instalaciju skripti, početno postavljanje i cron. [Konfiguracija Azurea i DuckDNS-a](frontend.md#azure-i-duckdns) određuje javnu domenu, portove i HTTPS. Na postojećem serveru početna instalacija već je provedena.
 
-### Postupak postavljanja
+### Automatske nadogradnje
 
-1. **Infrastruktura baze podataka:** [Postupak kreiranja instance baze i primjene migracija.]
-2. **Postavljanje poslužiteljskog dijela:** [Povezivanje repozitorija, postavljanje tajnih varijabli i pokretanje.]
-3. **Izgradnja i objava klijentskog dijela:** [Postavljanje javnog URL-a poslužitelja i generiranje statičkih datoteka.]
-4. **Završno povezivanje:** [Postavljanje dozvoljenih ishodišta (CORS) i verifikacija javne domene.]
+1. Član tima razvija i provjerava promjene lokalno te otvara PR prema `main`.
+2. GitHub Actions [CI](../.github/workflows/ci.yml) provjerava testove, skripte, izgradnju oba imagea i rad aplikacije sa svježom testnom bazom.
+3. Nakon pregleda i mergea CI se izvršava i za točan commit na `main`.
+4. Serverov [`sync.py`](../ops/sync.py), pokrenut cronom svakih pet minuta, postavlja novu inačicu tek kad pronađe uspješan CI za taj commit.
+5. [`deploy.sh`](../ops/deploy.sh) izgradi imageove, izradi kopiju postojeće baze, pokrene containere i potvrdi njihovu spremnost prije zapisivanja `state/current-sha`.
 
-### Pristup i administracija
+To je kontinuirano postavljanje nakon provjerenog mergea. Promjene samo u radnoj grani ne mijenjaju javnu aplikaciju. Automatizacija trenutačno uključuje i promjene dokumentacije na `main`; zamjena containera može kratko prekinuti dostupnost. Instalirane upravljačke skripte u `bin/` održavatelj ažurira zasebno nakon pregleda promjena u `ops/`.
 
-- **Nadzor rada i zapisi pogrešaka:** [Objasnite gdje i kako ovlašteni članovi tima pristupaju zapisima poslužitelja (engl. *logs*) te kako pregledati pogreške aplikacije.]
-- **Upravljanje administratorskim ovlastima:** [Ako aplikacija ima administratorsku ili moderatorsku ulogu, navedite putanju do sučelja i proceduru dodjele uloge bez javnog otkrivanja pristupnih podataka. Ako nema administratorskog sučelja, to kratko navedite.]
-- **Postupak ažuriranja:** [Opišite kako izmjena iz glavne grane dolazi do postavljene aplikacije. Navedite izvodi li se postavljanje ručno, kontinuiranom isporukom ili kontinuiranim postavljanjem te koje provjere prethode postavljanju.]
-- **Sigurnosne kopije i oporavak:** [Dokumentirajte samo ako ga je tim stvarno konfigurirao i koristio.]
+### Pristup, nadzor i oporavak
 
-Opisujte samo okruženja i automatizirane postupke koji stvarno postoje. Okruženje za pripremu, kontinuirana integracija (CI), kontinuirana isporuka ili kontinuirano postavljanje (CD), krajnja točka za provjeru stanja, sigurnosne kopije i druge operativne mogućnosti navode se samo ako ih tim stvarno koristi.
-<details>
-<summary><strong>Primjer konfiguriranja statičkog web-mjesta, poslužiteljskog dijela i baze podataka na Renderu</strong></summary>
+- Svaki član kojem treba SSH koristi vlastiti Linux račun i javni ključ. [Upute za osobni pristup](team-access.md) opisuju već pripremljene račune i dodjelu zasebnih prava baze. Uobičajeni frontend i backend razvoj odvija se lokalno.
+- Administrator prati `state/current-sha`, zapise u `logs/` i stanje containera prema [uputama za upravljanje](deployment.md#upravljanje-i-sigurnosne-kopije). Linux račun `ivanbartol` ne ovisi o GitHub korisničkom imenu.
+- Kopije baze nastaju prije nadogradnji i svakodnevno u 03:30 UTC. Čuvaju se **samo na istom serveru**; kopiranje izvan servera i politika zadržavanja još se trebaju uspostaviti.
+- Obnova kopije prethodno je provjerena u zasebnoj testnoj bazi. Operativni vodič opisuje provjeru oporavka; automatski povrat migracija baze nije implementiran. `docker compose down -v` ne koristi se na zajedničkom serveru jer briše podatke.
+- Administratorsko sučelje same aplikacije još nije implementirano. Linux administratorski račun nije korisnička uloga u aplikaciji.
 
-**Primjer — CrisisMap:**
-
-Jedno izvedivo postavljanje prethodno opisanog Node.js nastavnog primjera koristi sljedeće usluge Rendera. Lokalna PostgreSQL baza iz odjeljka 6.2 odvojena je od upravljane baze koja poslužuje javnu aplikaciju.
-
-| **Postavljeni podsustav** | **Izvor i konfiguracija izgradnje / pokretanja** | **Potrebne varijable i mrežne veze** |
-| --- | --- | --- |
-| **Statičko web-mjesto** (klijent) | Mapa `frontend/`; grana `main`; izgradnja `npm ci && npm run build`; direktorij objave `dist/`. | `VITE_API_BASE_URL` postavljen na javni URL poslužiteljskog dijela. To je konfiguracija vidljiva pregledniku, a ne tajna vrijednost. |
-| **Web-usluga** (poslužitelj) | Mapa `backend/`; Node.js okruženje; izgradnja `npm ci`; pokretanje `npm start`. | `DATABASE_URL` (**interni** URL Render baze), `PORT` (dodjeljuje platforma). Poslužitelj mora slušati `PORT` na `0.0.0.0`. Po potrebi konfigurirajte dopušteno ishodište klijenta (CORS). |
-| **Upravljani PostgreSQL** | Baza stvorena u istoj Render regiji kao i web-usluga; početnu shemu primijenite na **novu** bazu prije posluživanja zahtjeva za prijave. | Podatke veze dohvatite iz nadzorne ploče baze i čuvajte ih privatnima. Kasnije migracije primjenjujte zasebno umjesto ponovnog izvođenja početne skripte. |
-| **Pružatelj obavijesti** | Integraciju konfigurirajte u poslužiteljskom dijelu samo ako pripada odobrenom projektu i implementirana je. | Poslužiteljski pristupni podatak unesite kroz tajne postavke platforme; dokumentirajte njegov **naziv**, nikada vrijednost. |
-
-#### Koraci izvođenja na Renderu
-
-1. **Stvaranje baze podataka:** U nadzornoj ploči Rendera stvorite PostgreSQL bazu u regiji u kojoj će se izvoditi poslužiteljski dio. Interni URL baze čuvajte za poslužiteljski dio; nemojte ga unositi u dokumentaciju ni u postavke klijenta.
-2. **Inicijalizacija produkcijske sheme:** Ako baza dopušta vanjsku vezu, iz pouzdanog terminala u korijenu repozitorija povežite se uputom za PSQL iz nadzorne ploče. U otvorenoj `psql` sesiji pokrenite:
-
-   ```sql
-   \i backend/db/001_create_schema.sql
-   \dt
-   ```
-
-   *Napomena:* Naredbu za povezivanje koja sadrži pristupne podatke nikada ne kopirajte u repozitorij ni dokumentaciju. Ako su vanjske veze onemogućene, opišite stvarni ovlašteni mehanizam migracije svog tima. Početnu skriptu ne pokrećite ponovno pri svakom postavljanju.
-3. **Pokretanje poslužiteljske web-usluge:** Povežite repozitorij, odaberite Node.js okruženje i odgovarajuću granu, postavite korijenski direktorij na `backend/`, naredbu izgradnje na `npm ci` i naredbu pokretanja na `npm start`. U privatne postavke okruženja dodajte `DATABASE_URL` s **internim** URL-om baze. Poslužitelj konfigurirajte da sluša na `0.0.0.0` i portu iz varijable `PORT`. Nakon uspješnog postavljanja zabilježite javnu adresu usluge (npr. `https://crisismap-api.onrender.com`).
-4. **Izgradnja klijentskog web-mjesta:** Povežite repozitorij, odaberite `frontend/`, naredbu izgradnje `npm ci && npm run build` i mapu objave `dist/`. Prije izgradnje postavite `VITE_API_BASE_URL` na **javnu adresu poslužitelja**; ovdje nikada ne koristite privatni URL baze. Zabilježite generiranu javnu adresu web-mjesta.
-5. **Povezivanje i verifikacija produkcijskog rada:** Ako poslužitelj ograničava ishodišta preglednika, dopustite javnu adresu statičkog web-mjesta i ponovno postavite poslužiteljski dio. Otvorite javnu adresu klijenta, podnesite prijavu i ponovno je dohvatite kako biste potvrdili trajno spremanje. Zabilježite javni URL web-mjesta u `README.md`.
-6. **Održavanje:** Ako postavljanje ne uspije, pregledajte izlaz i zapise postavljanja usluge u Renderu. Za novu reviziju koristite konfigurirano automatsko postavljanje iz repozitorija ili ručnu radnju postavljanja iz nadzorne ploče. Pristupni podatak za obavijesti konfigurirajte samo u poslužiteljskom dijelu i samo ako je ta funkcionalnost stvarno implementirana. Automatsko pokretanje postavljanja nakon promjene u repozitoriju samo po sebi nemojte nazivati kontinuiranim postavljanjem (CD) ako projekt nema definiran automatizirani tijek provjera koji promjena mora uspješno proći prije postavljanja.
-
-Tim zamjenjuje ogledne nazive direktorija, naredbe, mehanizam sheme i postavke vrijednostima koje rade u vlastitom repozitoriju. Ako obavijesti nisu dostupne, integraciju dokumentirajte iskreno; uspješno podnošenje prijave ne dokazuje uspješnu dostavu obavijesti.
-
-Ako aplikacija uključuje moderatorsko sučelje, navedite njegovu putanju i objasnite kako se moderatorski račun dodjeljuje kroz aplikaciju ili odobreni postupak tima. Nemojte objaviti zadanu lozinku. Oporavak baze podataka opisujte samo ako je tim uspostavio uporabljiv postupak sigurnosnog kopiranja; nemojte implicirati da upravljani smještaj automatski jamči oporavak.
-
-**Analiza primjera:** API i obrada obavijesti ostaju u jednom postavljanju poslužiteljskog dijela, kao na dijagramu. Postupak razlikuje Renderovu internu vezu s bazom od javnog URL-a poslužitelja koji koristi klijent te uspostavlja shemu prije obrade prijava. Izgradnja klijenta dobiva samo konfiguraciju vidljivu pregledniku; tajni podaci baze i pružatelja ostaju u poslužiteljskom dijelu. Render je samo jedan nastavni primjer pa druga platforma zahtijeva opis vlastitog postupka.
-</details>
-
----
-
->**Završna provjera:** Upute za lokalno pokretanje omogućuju podizanje cjelokupnog sustava iz čiste kopije repozitorija bez neprenosivih lokalnih staza. Dijagram razmještaja prikazuje samo stvarno produkcijsko okruženje, njegove čvorove i protokole. Poveznica na javnu aplikaciju provjerena je, vodi na postavljenu verziju programa i jednaka je onoj u `README.md`. Administracijske upute opisuju samo mogućnosti koje tim stvarno pruža. Nijedna datoteka dokumentacije, konfiguracijski primjer niti zapis promjene ne sadrži stvarne pristupne podatke, privatne tokene ili lozinke.
+[Zapis provjere od 27. 10. 2026.](deployment.md#provjera-javnog-postavljanja--27-10-2026) navodi tada aktivnu inačicu, provjerene javne endpointove, stanje containera i kopija. Dokumentaciju treba usklađivati s daljnjom implementacijom.
