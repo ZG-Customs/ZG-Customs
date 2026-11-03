@@ -35,22 +35,23 @@ function App() {
 
   return (
     <main>
-      <h1>ZG Customs</h1>
-      <p>Početna testna stranica projekta AutoServis.</p>
-      <p>Aplikacija je tek u razvoju. Prijava i naručivanje još nisu dostupni.</p>
-      <hr />
-      <h2>Vrste servisa</h2>
-      <div role="status" aria-live="polite">
-        {state === 'loading' && <p>Učitavanje podataka…</p>}
-        {state === 'error' && <p>Podatke trenutačno nije moguće učitati. Pokušajte osvježiti stranicu.</p>}
-        {state === 'ready' && <p>Veza s backendom i bazom radi.</p>}
-      </div>
-      {state === 'ready' && (
-        services.length > 0
-          ? <ul>{services.map((service) => <li key={service.id}><strong>{service.name}</strong> — {service.description}</li>)}</ul>
-          : <p>Još nema dodanih vrsta servisa.</p>
-      )}
-      <footer>Programsko inženjerstvo · FER · 2026./2027.</footer>
+      <header className="intro">
+        <h1>ZG <span>-</span> Customs</h1>
+        <p>Uskoro!</p>
+      </header>
+
+      <details className="catalog">
+        <summary>Vrste servisa</summary>
+        <div role="status" aria-live="polite">
+          {state === 'loading' && <p>Učitavanje podataka…</p>}
+          {state === 'error' && <p>Podatke trenutačno nije moguće učitati. Pokušajte osvježiti stranicu.</p>}
+        </div>
+        {state === 'ready' && (
+          services.length > 0
+            ? <ul>{services.map((service) => <li key={service.id}><strong>{service.name}</strong> — {service.description}</li>)}</ul>
+            : <p>Još nema dodanih vrsta servisa.</p>
+        )}
+      </details>
     </main>
   );
 }

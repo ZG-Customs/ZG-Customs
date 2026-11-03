@@ -1,15 +1,54 @@
 body {
   margin: 0;
-  padding: 32px 20px;
-  font-family: Arial, Helvetica, sans-serif;
-  color: #222;
-  background: white;
+  background: #faf8f4;
+  color: #242320;
+  font-family: system-ui, sans-serif;
+}
+
+main {
+  box-sizing: border-box;
+  min-height: 100svh;
+  display: grid;
+  grid-template-rows: 1fr auto;
+  padding: 1.5rem;
+}
+
+.intro {
+  align-self: center;
+  text-align: center;
+  padding-block: 3rem;
+}
+
+.intro h1 {
+  margin: 0;
+  font-size: clamp(2.25rem, 9vw, 7rem);
+  line-height: 1.05;
+  font-weight: 800;
+  letter-spacing: -0.055em;
+}
+
+.intro h1 span { color: #b33f2a; }
+
+.intro p {
+  margin: 1rem 0 0;
+  color: #665e55;
+  font-size: clamp(1rem, 2vw, 1.35rem);
+}
+
+.catalog {
+  width: min(100%, 38rem);
+  margin-inline: auto;
+  border-top: 1px solid #d6cfc6;
   line-height: 1.6;
 }
-main { max-width: 720px; margin: 0 auto; }
-h1 { font-size: 32px; }
-h2 { font-size: 21px; }
-hr { border: 0; border-top: 1px solid #ddd; margin: 28px 0; }
-ul { padding-left: 24px; }
-li { margin-bottom: 10px; }
-footer { margin-top: 48px; color: #666; font-size: 13px; }
+
+.catalog summary {
+  padding-block: 0.75rem;
+  color: #514c46;
+  cursor: pointer;
+}
+
+.catalog summary::marker { color: #b33f2a; }
+.catalog summary:focus-visible { outline: 2px solid #b33f2a; }
+.catalog ul { padding-inline-start: 1.5rem; }
+.catalog li + li { margin-top: 0.5rem; }
