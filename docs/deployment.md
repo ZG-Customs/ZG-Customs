@@ -121,6 +121,8 @@ Oporavak najprije provjerite u zasebnoj praznoj bazi: `pg_restore --exit-on-erro
 
 Nakon uspješne objave [skripta za čišćenje slika](../ops/retain_images.py) zadržava backend i web sliku za aktivno i dva prethodna različita uspješna izdanja. Redoslijed pamti u `state/image-retention`. Dok nema tri zabilježena izdanja ne uklanja slike. Uklanja samo stare oznake projekta s punim Git SHA-om i preskače slike koje koristi bilo koji container, uključujući zaustavljene. Pogreška održavanja zapisuje se u deploy log. Na ovom namjenskom VM-u Buildx uklanja višak neiskorištenog cachea zadanog buildera s ciljem od 2 GB. Kopije baze, PostgreSQL i Docker volumei ostaju izvan tog postupka.
 
+Uz `--apply` valjana povijest atomarno se sprema prije Docker provjera, pa pogreška pri provjeri ili čišćenju ne izostavlja uspješnan release iz evidencije. Ako nedostaje neki image zadržanih izdanja, skripta navodi njegov `repo:sha` i prekida čišćenje. Docker provjere i pojedinačna brisanja imaju timeout od 60 sekundi, a čišćenje cachea 300 sekundi; greške navode fazu i egzaktnu naredbu koja nije uspjela. Pokretanje bez `--apply` ne mijenja povijest ni Docker stanje.
+
 Plan čišćenja može se pogledati na serveru bez brisanja:
 
 ```bash
