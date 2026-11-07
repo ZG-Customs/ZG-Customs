@@ -87,7 +87,7 @@ mkdir -p "$HOME/apps/zg-customs"/{bin,state,logs,backups,releases}
 git clone https://github.com/ZG-Customs/ZG-Customs.git "$HOME/apps/zg-customs/repo"
 cd "$HOME/apps/zg-customs/repo"
 bash scripts/init-env.sh "$HOME/apps/zg-customs/.env"
-cp ops/deploy.sh ops/backup.sh ops/sync.py ops/prepare-team-accounts.sh "$HOME/apps/zg-customs/bin/"
+cp ops/deploy.sh ops/backup.sh ops/sync.py ops/retain_images.py ops/prepare-team-accounts.sh "$HOME/apps/zg-customs/bin/"
 ```
 
 Na **novom serveru**, prije prvog postavljanja uredite privatnu `.env` prema [konfiguraciji domene i HTTPS-a](frontend.md#azure-i-duckdns), usmjerite DNS i dopustite TCP portove 80 i 443. Početnu pregledanu inačicu postavite iz serverove mape `repo/` naredbom `bash "$HOME/apps/zg-customs/bin/deploy.sh" "$(git rev-parse HEAD)"`. Ovi koraci početne instalacije već su provedeni na postojećem serveru.
@@ -119,7 +119,19 @@ Kopije nastaju prije nadogradnje i jednom dnevno ako je cron instaliran. To su *
 
 Oporavak najprije provjerite u zasebnoj praznoj bazi: `pg_restore --exit-on-error --no-owner --no-privileges --dbname=<TEST_DB> <backup.dump>`. Ne obnavljajte preko aktivne baze bez dogovora i nove sigurnosne kopije. Vraćanje starog Docker imagea samo po sebi ne vraća migracije baze; zato automatski rollback nakon promjene sheme nije uključen.
 
-Pratite slobodni disk (`df -h`, `docker system df`), lokalne kopije, release direktorije i stare imageove. Brisanje starih inačica radi se nakon provjere potrebnih kopija i rollback verzija; ne koristi se globalni `docker system prune --volumes`.
+Nakon uspješne objave [skripta za čišćenje slika](../ops/retain_images.py) zadržava backend i web sliku za aktivno i dva prethodna različita uspješna izdanja. Redoslijed pamti u `state/image-retention`. Dok nema tri zabilježena izdanja ne uklanja slike. Uklanja samo stare oznake projekta s punim Git SHA-om i preskače slike koje koristi bilo koji container, uključujući zaustavljene. Pogreška održavanja zapisuje se u deploy log. Na ovom namjenskom VM-u Buildx uklanja višak neiskorištenog cachea zadanog buildera s ciljem od 2 GB. Kopije baze, PostgreSQL i Docker volumei ostaju izvan tog postupka.
+
+Uz `--apply` valjana povijest atomarno se sprema prije Docker provjera, pa pogreška pri provjeri ili čišćenju ne izostavlja uspješnan release iz evidencije. Ako nedostaje neki image zadržanih izdanja, skripta navodi njegov `repo:sha` i prekida čišćenje. Docker provjere i pojedinačna brisanja imaju timeout od 60 sekundi, a čišćenje cachea 300 sekundi; greške navode fazu i egzaktnu naredbu koja nije uspjela. Pokretanje bez `--apply` ne mijenja povijest ni Docker stanje.
+
+Plan čišćenja može se pogledati na serveru bez brisanja:
+
+```bash
+zg_root="$HOME/apps/zg-customs"
+flock "$zg_root/state/deploy.lock" python3 "$zg_root/bin/retain_images.py"
+docker system df
+```
+
+Za ručno izvršavanje iste naredbe dodajte `--apply` iza imena skripte. Zajedno instalirajte ažurirani `deploy.sh` i `retain_images.py` u `bin/`. Sačuvane slike omogućuju povratak aplikacijskog koda uz provjeru kompatibilnosti sa shemom baze.
 
 ## Testiranje backenda
 
