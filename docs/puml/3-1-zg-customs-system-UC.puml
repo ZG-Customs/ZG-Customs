@@ -1,0 +1,220 @@
+' ==============================================================================
+' 3-1-zg-customs-system-UC.puml
+'
+' Svrha:    Prikazuje korisničke ciljeve, uloge i vanjske sudionike sustava
+'           ZG Customs. Ciljevi su grupirani prema poslovnom području;
+'           grupe ne predstavljaju zasebne aplikacije ni komponente.
+' Opseg:    Pristup sustavu, održavanje vozila, rad autoservisa i administracija.
+' Izvori:   docs/1-Projekt.md;
+'           docs/2-Analiza-zahtjeva.md. Struktura prema odjeljku 3.1 dokumenta
+'           docs/3-Obrasci-uporabe.md i oglednom dijagramu CrisisMap.
+' Status:   Model planiranog ponašanja, a ne potvrda implementacije.
+' Oznake:   Zadržani su identifikatori UC-01 do UC-23.
+'
+' Diagram level: System Requirements
+' Diagram type:  Use Case Diagram
+' ==============================================================================
+
+@startuml
+title Sustav ZG Customs - obrasci uporabe
+left to right direction
+
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+skinparam ArrowColor #212529
+skinparam packageStyle rectangle
+skinparam nodesep 65
+skinparam ranksep 90
+
+skinparam actor {
+    BackgroundColor #F8F9FA
+    BorderColor #212529
+    BackgroundColor<<external system>> #FFF3CD
+    BorderColor<<external system>> #856404
+}
+
+skinparam usecase {
+    BackgroundColor #E7F1FF
+    BorderColor #0D6EFD
+}
+
+skinparam package {
+    BackgroundColor #F8F9FA
+    BorderColor #CED4DA
+    FontColor #495057
+}
+
+skinparam note {
+    BackgroundColor #FFF9E6
+    BorderColor #D6BC70
+}
+
+' ==============================================================================
+' Primarni akteri i zajedničke mogućnosti
+' ==============================================================================
+
+actor "Korisnik aplikacije" as User
+actor "Vlasnik vozila" as Owner
+actor "Serviser" as Mechanic
+actor "Voditelj autoservisa" as Manager
+actor "Administrator platforme" as Admin
+
+' Sve uloge nasljeđuju pristup računu i profilu. Poslovne ovlasti određuju
+' se zasebno: vlasništvom vozila, dodjelom servisa i pripadnošću autoservisu.
+Owner --|> User
+Mechanic --|> User
+Manager --|> User
+Admin --|> User
+
+' Prostorni redoslijed uloga prati poslovna područja unutar sustava.
+' Skrivene veze služe samo rasporedu i ne predstavljaju UML odnose.
+Owner -[hidden]down-> Mechanic
+Mechanic -[hidden]down-> Manager
+Manager -[hidden]down-> Admin
+
+' ==============================================================================
+' Sekundarni akteri - vanjski sustavi
+' ==============================================================================
+
+actor "Pružatelj identiteta\n(OAuth 2.0)" as IdP <<external system>>
+actor "Pružatelj e-pošte\n(Resend)" as Mail <<external system>>
+actor "Pružatelj naplate\n(Stripe)" as Stripe <<external system>>
+
+' ==============================================================================
+' Granica sustava i korisnički ciljevi
+' ==============================================================================
+
+rectangle "ZG Customs" as ZGCustoms {
+
+    package "Pristup i osobni račun" {
+        usecase "UC-01\nRegistracija i prijava" as UC_SignIn
+        usecase "UC-02\nUpravljanje profilom\ni odjava" as UC_Profile
+        usecase "UC-23\nBrisanje vlastitog računa" as UC_DeleteAccount
+    }
+
+    package "Vozila i korisnički pregled servisa" {
+        usecase "UC-03\nUpravljanje vlastitim vozilima" as UC_Vehicles
+        usecase "UC-04\nRezervacija servisnog termina" as UC_Booking
+        usecase "UC-05\nPraćenje servisa i obavijesti" as UC_Tracking
+        usecase "UC-06\nPregled servisne povijesti\ni dokumenata" as UC_History
+        usecase "UC-07\nOcjenjivanje završenog servisa" as UC_Review
+        usecase "UC-22\nPreuzimanje termina (.ics)" as UC_CalendarExport
+    }
+
+    package "Izvođenje servisa i dodatni radovi" {
+        usecase "UC-10\nObrada dodijeljenog servisa" as UC_Service
+        usecase "UC-11\nPredlaganje dodatnih radova" as UC_Offer
+        usecase "UC-08\nOdluka o dodatnim radovima" as UC_OfferDecision
+    }
+
+    package "Organizacija autoservisa" {
+        usecase "UC-09\nZahtjev za pridruživanje\nautoservisu" as UC_JoinWorkshop
+        usecase "UC-12\nZahtjev za registraciju\nautoservisa" as UC_RegisterWorkshop
+        usecase "UC-13\nOrganizacija termina\ni dodjela servisa" as UC_Scheduling
+        usecase "UC-14\nUpravljanje timom" as UC_Team
+        usecase "UC-15\nPregled poslovanja i statistike" as UC_WorkshopStatistics
+        usecase "UC-16\nUređivanje autoservisa\ni radnog vremena" as UC_WorkshopSettings
+        usecase "UC-17\nUpravljanje pretplatom\ni načinom plaćanja" as UC_Subscription
+    }
+
+    package "Administracija platforme" {
+        usecase "UC-18\nOdobravanje i deaktivacija\nautoservisa" as UC_WorkshopAdministration
+        usecase "UC-19\nUpravljanje korisničkim računima" as UC_UserAdministration
+        usecase "UC-20\nOdređivanje cijene\ni pregled pretplata" as UC_SubscriptionAdministration
+        usecase "UC-21\nPregled statistike platforme" as UC_PlatformStatistics
+    }
+}
+
+' ==============================================================================
+' Zajednički pristup sustavu
+' ==============================================================================
+
+' Administrator koristi postojeći administratorski račun; javna registracija
+' u UC-01 odnosi se na ostale uloge. Odabir uloge ne odobrava poslovne ovlasti.
+User -- UC_SignIn
+User -- UC_Profile
+
+' Prijava je preduvjet zaštićenih radnji, a ne njihov <<include>>.
+' Grupiranje ciljeva ne uvodi <<include>> ili <<extend>> odnose:
+' povezanost poslovnih koraka sama po sebi ne znači uključivanje ponašanja.
+
+' ==============================================================================
+' Vlasnik vozila - od rezervacije do završene usluge
+' ==============================================================================
+
+Owner -- UC_Vehicles
+Owner -- UC_Booking
+Owner -- UC_Tracking
+Owner -- UC_History
+Owner -- UC_Review
+Owner -- UC_OfferDecision
+Owner -- UC_CalendarExport
+Owner -- UC_DeleteAccount
+
+' Rezervacija obuhvaća zahtjev i odluku vlasnika o predloženom novom terminu.
+' Izvoz .ics dostupan je za potvrđeni termin; Google Calendar nije izravni akter.
+' Ocjenjivanje traži završen vlastiti servis; komentar je opcionalan uz ocjenu.
+
+' ==============================================================================
+' Serviser - dodijeljeni radovi i prijedlozi dodatnih zahvata
+' ==============================================================================
+
+Mechanic -- UC_JoinWorkshop
+Mechanic -- UC_Service
+Mechanic -- UC_Offer
+
+' Obrada servisa obuhvaća status, komentare, radove, dijelove, utrošeno vrijeme
+' i završni trošak. Ponuda i odluka ostaju odvojeni ciljevi različitih aktera;
+' odbijanje ponude ne znači automatski otkazivanje cijelog servisa.
+
+' ==============================================================================
+' Voditelj - organizacija vlastitog autoservisa
+' ==============================================================================
+
+Manager -- UC_RegisterWorkshop
+Manager -- UC_Scheduling
+Manager -- UC_Team
+Manager -- UC_WorkshopStatistics
+Manager -- UC_WorkshopSettings
+Manager -- UC_Subscription
+Manager -- UC_History
+
+' Organizacija uključuje prihvaćanje/odbijanje zahtjeva, termine, kalendar
+' i dodjelu servisera. Upravljanje timom uključuje odluke o pridruživanju
+' i uklanjanje članstva uz očuvanje povijesti obavljenih radova.
+' UC-06 voditelju daje povijest radova njegova autoservisa; vlasnikov dio
+' istog cilja uključuje pregled i preuzimanje vlastitog računa.
+
+' ==============================================================================
+' Administrator - upravljanje platformom
+' ==============================================================================
+
+Admin -- UC_WorkshopAdministration
+Admin -- UC_UserAdministration
+Admin -- UC_SubscriptionAdministration
+Admin -- UC_PlatformStatistics
+
+' Odluka o registraciji autoservisa pripada administratoru; odluka o zahtjevu
+' servisera za članstvo pripada voditelju. To su različite granice ovlasti.
+
+' ==============================================================================
+' Vanjske integracije u ostvarenju korisničkih ciljeva
+' ==============================================================================
+
+UC_SignIn -- IdP
+UC_Tracking -- Mail
+UC_Subscription -- Stripe
+
+' Veza s Resendom prikazuje korisnički cilj primanja servisnih obavijesti.
+' E-pošta prati i uspostavu računa te odluke o terminima, ponudama,
+' članstvu i registraciji autoservisa. Ponavljanje svih tih veza izostavljeno
+' je radi preglednosti; slanje i pogreške dostave razrađuju sekvencijski modeli.
+' Stripe naplaćuje pretplatu autoservisa, ne pojedinačni popravak vozila.
+
+legend bottom
+    Zaštićene radnje zahtijevaju aktivan račun i odgovarajuće ovlasti.
+    Grupe prikazuju poslovna područja; UC oznake identificiraju korisničke ciljeve.
+endlegend
+
+@enduml
