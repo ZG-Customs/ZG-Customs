@@ -1,0 +1,119 @@
+' ==============================================================================
+' 4-1-zg-customs-system-CMP.puml
+'
+' Svrha:    Prikazuje web-klijent, module poslužiteljske aplikacije, pohranu
+'           i vanjske usluge za autentifikaciju, e-poštu i pretplate.
+' Izvori:   docs/1-Projekt.md;
+'           docs/2-Analiza-zahtjeva.md.
+' Status:   Konceptualni prijedlog; ne potvrđuje implementaciju.
+' Praćenje: Model uskladiti s odlukama o poslovnim pravilima i realizacijom;
+'           otvorena pitanja i predložene odluke označeni su u bilješkama.
+'
+' Diagram level: High-level Logical Architecture
+' Diagram type:  Component Diagram
+' ==============================================================================
+
+@startuml
+title ZG Customs - Komponente sustava
+
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+skinparam ArrowColor #212529
+left to right direction
+skinparam componentStyle rectangle
+
+skinparam component {
+    BackgroundColor #E7F1FF
+    BorderColor #0D6EFD
+}
+
+skinparam database {
+    BackgroundColor #E7F1FF
+    BorderColor #0D6EFD
+}
+
+skinparam note {
+    BackgroundColor #F8F9FA
+    BorderColor #212529
+    FontColor #212529
+}
+
+' ==============================================================================
+' Korisnički pristup
+' ==============================================================================
+
+actor "Korisnici svih uloga" as Users
+
+' ==============================================================================
+' Unutarnje komponente i pohrana
+' ==============================================================================
+
+' Moduli dijele Spring Boot aplikaciju; ne predstavljaju zasebne mikroservise.
+rectangle "ZG Customs" {
+    component "React web-klijent" as Web
+    rectangle "Spring Boot aplikacija" {
+        component "REST API i provjera ovlasti" as API
+        component "Identiteti, profili, autoservisi i članstva" as Accounts
+        component "Vozila, rezervacije i raspored" as Booking
+        component "Servisi, ponude i ocjene" as Service
+        component "Dokumenti (.ics, račun)\ni statistika" as Reports
+        component "Pretplate" as Billing
+        component "Slanje i ponavljanje obavijesti" as Notify
+    }
+
+    database "PostgreSQL" as DB
+}
+
+' ==============================================================================
+' Vanjski pružatelji usluga
+' ==============================================================================
+
+cloud "OAuth 2.0" as IdP
+cloud "Resend" as Mail
+cloud "Stripe" as Stripe
+
+' ==============================================================================
+' Komunikacija klijenta i poslužiteljski moduli
+' ==============================================================================
+
+Users --> Web
+Web --> API : HTTPS / JSON i preuzimanja
+API --> IdP : vanjska autentifikacija
+API --> Accounts
+API --> Booking
+API --> Service
+API --> Reports
+API --> Billing
+
+' ==============================================================================
+' Trajna pohrana poslovnih podataka
+' ==============================================================================
+
+Accounts --> DB
+Booking --> DB
+Service --> DB
+Reports --> DB
+Billing --> DB
+
+' ==============================================================================
+' Asinkrone obavijesti i integracija naplate
+' ==============================================================================
+
+Notify --> DB : trajni red obavijesti
+Notify --> Mail : e-mail
+Billing --> Stripe : checkout / portal
+Stripe --> Billing : potpisani webhook
+
+' ==============================================================================
+' Transakcijska granica i obrada neuspjelog slanja
+' ==============================================================================
+
+note bottom of DB
+    Poslovna promjena i zapis obavijesti spremaju se
+    u istoj transakciji.
+    Neuspjeh e-pošte ne poništava spremljenu odluku.
+    Moduli nisu zasebni mikroservisi.
+end note
+
+@enduml

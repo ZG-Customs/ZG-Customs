@@ -1,0 +1,101 @@
+' ==============================================================================
+' 4-4-zg-customs-additional-work-SD.puml
+'
+' Svrha:    Prikazuje podnošenje dodatne ponude, odluku vlasnika i obavijesti
+'           uz provjeru ovlasti, stanja ponude i uspješnosti pohrane.
+' Izvori:   docs/1-Projekt.md;
+'           docs/2-Analiza-zahtjeva.md.
+' Status:   Konceptualni prijedlog; ne potvrđuje implementaciju.
+' Praćenje: Model uskladiti s odlukama o poslovnim pravilima i realizacijom;
+'           otvorena pitanja i predložene odluke označeni su u bilješkama.
+'
+' Diagram level: Conceptual Interaction Design
+' Diagram type:  Sequence Diagram
+' ==============================================================================
+
+@startuml
+title ZG Customs - Predlaganje i odobravanje dodatnih radova
+
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+skinparam ArrowColor #212529
+skinparam maxMessageSize 150
+skinparam sequenceMessageAlign center
+
+skinparam sequence {
+    ParticipantBackgroundColor #E7F1FF
+    ParticipantBorderColor #0D6EFD
+    ActorBackgroundColor #F8F9FA
+    ActorBorderColor #212529
+    LifeLineBorderColor #212529
+}
+
+skinparam note {
+    BackgroundColor #F8F9FA
+    BorderColor #212529
+    FontColor #212529
+}
+
+autonumber
+
+' ==============================================================================
+' Sudionici interakcije
+' ==============================================================================
+
+actor "Dodijeljeni serviser" as Mechanic
+actor "Vlasnik vozila" as Owner
+participant "Servisni API" as API
+database "Baza / outbox" as DB
+participant "Radnik obavijesti / Resend" as Mail
+
+' ==============================================================================
+' Faza 1: predlaganje dodatnih radova
+' ==============================================================================
+
+Mechanic -> API : POST /api/services/{id}/offers\n(opis, procijenjena cijena)
+API -> API : provjeri aktivnu dodjelu, InProgress i unos
+alt nedopušten pristup / nevaljan unos / stanje
+    API --> Mechanic : 403 / 400 / 409; bez ponude
+else valjano
+    API -> DB : transakcija: Pending ponuda + obavijest vlasniku
+    API --> Mechanic : 201 nakon commita; 500 ako spremanje ne uspije
+end
+
+' ==============================================================================
+' Faza 2: obavijest vlasniku i pregled spremljene ponude
+' ==============================================================================
+
+... samo ako je ponuda spremljena ...
+Mail -> DB : preuzmi obavijest
+Mail --> Owner : e-mail s poveznicom na ponudu
+Owner -> API : GET /api/services/{id}/offers
+API --> Owner : opis, procijenjena cijena i status (nakon provjere vlasništva)
+
+' ==============================================================================
+' Faza 3: odluka vlasnika i povratna obavijest serviseru
+' ==============================================================================
+
+' Samo aktualna ponuda u stanju Pending može dobiti novu odluku.
+Owner -> API : POST /api/offers/{id}/decision (Accepted ili Rejected)
+API -> API : provjeri vlasništvo i Pending stanje
+alt ponuda je već riješena ili nema ovlasti
+    API --> Owner : 409 / 403; odluka nije promijenjena
+else odluka dopuštena
+    API -> DB : transakcija: odluka + obavijest serviseru
+    API --> Owner : 200 nakon commita; 500 ako spremanje ne uspije
+    Mail -> DB : preuzmi obavijest
+    Mail --> Mechanic : e-mail s odlukom
+end
+
+' ==============================================================================
+' Posljedice odluke i granice dodatnih radova
+' ==============================================================================
+
+note over Mechanic, DB
+    Odbijanje dodatne ponude ne otkazuje automatski cijeli servis.
+    Nastavak osnovnih radova nakon odbijanja treba dogovoriti.
+    Nedostava e-pošte ne poništava spremljenu ponudu ili odluku.
+end note
+
+@enduml

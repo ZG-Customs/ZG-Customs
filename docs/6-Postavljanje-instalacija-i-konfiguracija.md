@@ -17,7 +17,11 @@ Na VM-u su portovi 8080 i 5432 vezani samo na `127.0.0.1`. Preglednik ne pristup
 
 Konfiguracija razmještaja nalazi se u [`compose.yaml`](../compose.yaml) i [`frontend/Caddyfile`](../frontend/Caddyfile). DuckDNS omogućuje naziv javne domene, a GitHub čuva izvorni kod i rezultate CI-ja. Planirane integracije prijave, Resenda i Stripea još nisu povezane s ovom inačicom.
 
-**Za dopunu prije službene predaje:** UML dijagram razmještaja i njegov PlantUML izvor prema opisanoj stvarnoj topologiji.
+![Slika 6.1. Razmještaj sustava ZG Customs](<./assets/diagrams/6-1-zg-customs-DD.svg>)
+
+**Slika 6.1. Razmještaj sustava ZG Customs** — [PlantUML izvor](./puml/6-1-zg-customs-DD.puml).
+
+Dijagram prikazuje dokumentirano stanje od 27. 10. 2026., a ne novu provjeru javnog servera. Planirane vanjske integracije nisu prikazane kao aktivne veze.
 
 ## 6.2 Lokalna instalacija i konfiguracija
 

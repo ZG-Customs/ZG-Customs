@@ -1,0 +1,84 @@
+' ==============================================================================
+' 4-5-zg-customs-booking-service-SM.puml
+'
+' Svrha:    Razdvaja dogovor termina od izvođenja radova te prikazuje
+'           dopuštene prijelaze, njihove uvjete i završne ishode.
+' Izvori:   docs/1-Projekt.md;
+'           docs/2-Analiza-zahtjeva.md.
+' Status:   Konceptualni prijedlog; ne potvrđuje implementaciju.
+' Praćenje: Model uskladiti s odlukama o poslovnim pravilima i realizacijom;
+'           otvorena pitanja i predložene odluke označeni su u bilješkama.
+'
+' Diagram level: Behavioral / Domain Design
+' Diagram type:  State Machine Diagram
+' ==============================================================================
+
+@startuml
+title ZG Customs - Životni ciklusi rezervacije i servisa
+
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+skinparam ArrowColor #212529
+
+skinparam state {
+    BackgroundColor #E7F1FF
+    BorderColor #0D6EFD
+}
+
+skinparam note {
+    BackgroundColor #F8F9FA
+    BorderColor #212529
+    FontColor #212529
+}
+
+' ==============================================================================
+' Životni ciklus rezervacije - dogovor termina
+' ==============================================================================
+
+state "Rezervacija" as Booking {
+    [*] --> Requested : vlasnik pošalje valjan zahtjev
+    state "Zatražena" as Requested
+    state "Čeka odluku vlasnika" as AwaitingOwner
+    state "Potvrđena" as Confirmed
+    state "Odbijena" as Rejected
+    state "Otkazana" as Cancelled
+    Requested --> Confirmed : voditelj prihvati / kreiraj Pending servis
+    Requested --> Rejected : voditelj odbije
+    Requested --> AwaitingOwner : voditelj predloži novi termin
+    AwaitingOwner --> Confirmed : vlasnik prihvati / kreiraj Pending servis
+    AwaitingOwner --> Cancelled : vlasnik odbije
+    Rejected --> [*]
+    Cancelled --> [*]
+}
+
+' ==============================================================================
+' Životni ciklus servisa - izvođenje radova
+' ==============================================================================
+
+' Servis nastaje nakon prve potvrde; novi dogovor termina ne stvara drugi servis.
+state "Servis (postoji nakon prve potvrde)" as Service {
+    [*] --> Pending
+    Pending --> InProgress : dodijeljeni serviser započne\n[rezervacija Confirmed]
+    InProgress --> Done : serviser završi\n[uneseni radovi, vrijeme, konačni trošak]
+    Done --> [*]
+    Pending --> [*] : rezervacija Cancelled\n[prije početka; arhiviraj zapis]
+}
+
+' ==============================================================================
+' Uvjeti prijelaza i povezanost životnih ciklusa
+' ==============================================================================
+
+note right of Booking
+    Svaka odluka / promjena termina pokreće obavijest.
+    Ponovno prihvaćanje termina ne kreira drugi servis.
+end note
+
+note right of Service
+    Stanje ponude Pending / Accepted / Rejected
+    odvojeno je od stanja servisa.
+    Svaka promjena statusa uključuje komentar i e-mail.
+    Done omogućuje račun, povijest i ocjenjivanje.
+end note
+
+@enduml

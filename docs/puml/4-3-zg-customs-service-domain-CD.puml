@@ -1,0 +1,240 @@
+' ==============================================================================
+' 4-3-zg-customs-service-domain-CD.puml
+'
+' Svrha:    Prikazuje put od vozila i rezervacije do radova, dodatnih ponuda,
+'           završnih dokumenata i ocjene obavljenog servisa.
+' Izvori:   docs/1-Projekt.md;
+'           docs/2-Analiza-zahtjeva.md.
+' Status:   Konceptualni prijedlog; ne potvrđuje implementaciju.
+' Praćenje: Model uskladiti s odlukama o poslovnim pravilima i realizacijom;
+'           otvorena pitanja i predložene odluke označeni su u bilješkama.
+'
+' Diagram level: Structural / Domain Design
+' Diagram type:  Class Diagram
+' ==============================================================================
+
+@startuml 4-3-ZG Customs-service-domain-CD
+title ZG Customs - Domenski model servisiranja vozila
+
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+skinparam ArrowColor #212529
+hide methods
+
+skinparam class {
+    BackgroundColor #E7F1FF
+    BorderColor #0D6EFD
+}
+
+skinparam note {
+    BackgroundColor #F8F9FA
+    BorderColor #212529
+    FontColor #212529
+}
+
+' ==============================================================================
+' Vlasnik, vozilo i katalog usluga
+' ==============================================================================
+
+class User {
+    id : Long
+    name : String
+    email : String
+}
+
+class Vehicle {
+    id : Long
+    registration : String
+    make : String
+    model : String
+    productionYear : Integer
+    mileage : Integer
+    archivedAt : DateTime [0..1]
+}
+
+class Workshop {
+    id : Long
+    managerId : Long {unique, not null}
+    name : String
+}
+
+class ServiceType {
+    id : Long
+    code : String
+    name : String
+    description : String
+}
+
+' ==============================================================================
+' Rezervacija i prijedlozi termina
+' ==============================================================================
+
+class Booking {
+    id : Long
+    requestedAt : DateTime
+    confirmedAt : DateTime [0..1]
+    status : BookingStatus
+    version : Long
+}
+
+class AppointmentProposal {
+    id : Long
+    proposedAt : DateTime
+    status : AppointmentProposalStatus
+}
+
+' ==============================================================================
+' Izvođenje servisa i povijest promjena
+' ==============================================================================
+
+class ServiceJob {
+    id : Long
+    status : ServiceStatus
+    startedAt : DateTime [0..1]
+    completedAt : DateTime [0..1]
+    finalCost : Decimal [0..1]
+    finalNotes : Text
+}
+
+class Assignment {
+    assignedAt : DateTime
+    endedAt : DateTime [0..1]
+}
+
+class WorkLog {
+    worksAndParts : Text
+    minutesSpent : Integer
+    notes : Text
+}
+
+class StatusChange {
+    fromStatus : ServiceStatus
+    toStatus : ServiceStatus
+    comment : Text
+    changedAt : DateTime
+}
+
+' ==============================================================================
+' Dodatni radovi, dokumenti i povratna informacija
+' ==============================================================================
+
+class AdditionalWorkOffer {
+    description : Text
+    estimatedCost : Decimal
+    status : AdditionalWorkOfferStatus
+    decidedAt : DateTime [0..1]
+}
+
+' Servisni dokument predstavlja račun za obavljeni servis.
+class ServiceDocument {
+    reference : String
+    issuedAt : DateTime
+}
+
+class Review {
+    rating : Integer
+    comment : Text [0..1]
+    createdAt : DateTime
+}
+
+' ==============================================================================
+' Enumeracije - dopuštene vrijednosti domenskih atributa
+' ==============================================================================
+
+' Zasebni životni ciklusi imaju zasebne tipove i kada dijele iste vrijednosti.
+' Enumeracije određuju stanja; pravila prijelaza i ovlasti provjerava aplikacija.
+
+enum BookingStatus {
+    REQUESTED
+    AWAITING_OWNER
+    CONFIRMED
+    REJECTED
+    CANCELLED
+}
+
+enum AppointmentProposalStatus {
+    PENDING
+    ACCEPTED
+    REJECTED
+}
+
+enum ServiceStatus {
+    PENDING
+    IN_PROGRESS
+    DONE
+}
+
+enum AdditionalWorkOfferStatus {
+    PENDING
+    ACCEPTED
+    REJECTED
+}
+
+' Ovisnosti povezuju atribute s njihovim tipovima; nisu veze između zapisa.
+Booking ..> BookingStatus : status
+AppointmentProposal ..> AppointmentProposalStatus : status
+ServiceJob ..> ServiceStatus : status
+StatusChange ..> ServiceStatus : fromStatus, toStatus
+AdditionalWorkOffer ..> AdditionalWorkOfferStatus : status
+
+' ==============================================================================
+' Veze i višestrukosti
+' ==============================================================================
+
+' Veze prikazuju pripadnost zapisa; ne propisuju kaskadno brisanje servisne povijesti.
+User "1" -- "0..1" Workshop : vlasnik / voditelj
+User "1" -- "0..*" Vehicle : vlasnik
+Vehicle "1" -- "0..*" Booking
+Workshop "1" -- "0..*" Booking
+ServiceType "1" -- "0..*" Booking
+Booking "1" -- "0..*" AppointmentProposal
+Booking "1" -- "0..1" ServiceJob : nakon potvrde
+ServiceJob "1" -- "0..*" Assignment
+User "1" -- "0..*" Assignment : serviser
+ServiceJob "1" -- "0..*" WorkLog
+User "1" -- "0..*" WorkLog : autor
+ServiceJob "1" -- "0..*" StatusChange
+User "1" -- "0..*" StatusChange : autor
+ServiceJob "1" -- "0..*" AdditionalWorkOffer
+User "1" -- "0..*" AdditionalWorkOffer : predlagatelj
+ServiceJob "1" -- "0..*" ServiceDocument
+ServiceJob "1" -- "0..1" Review
+User "1" -- "0..*" Review : vlasnik vozila
+
+' ==============================================================================
+' Poslovna ograničenja i otvorene odluke
+' ==============================================================================
+
+note bottom of ServiceJob
+    Odvojeni životni ciklusi rezervacije i servisa.
+    Najviše jedna aktivna dodjela po servisu (prijedlog).
+    Uklanjanje servisera čuva stare dodjele i radove.
+    Povijest i statistika izvode se iz servisnih zapisa.
+end note
+
+note bottom of Review
+    Ocjena 1-5; komentar ne postoji bez ocjene.
+    Samo vlasnik završenog servisa, najkasnije mjesec
+    dana nakon završetka. Jedna ocjena po servisu: prijedlog.
+end note
+
+note bottom of Vehicle
+    Arhiviranje umjesto fizičkog brisanja: prijedlog
+    za očuvanje povijesti. Politiku brisanja računa
+    i osobnih podataka treba zasebno dogovoriti.
+end note
+
+note top of ServiceType
+    ServiceType odgovara postojećem entitetu.
+    WorkLog čuva slobodan tekst; nema skladišta dijelova.
+end note
+
+note right of Workshop
+    managerId je strani ključ na User.id (uloga MANAGER).
+    NOT NULL osigurava jednog voditelja po autoservisu;
+    UNIQUE ograničava voditelja na najviše jedan autoservis.
+    Atribut i UML veza predstavljaju istu povezanost.
+end note
+
+@enduml

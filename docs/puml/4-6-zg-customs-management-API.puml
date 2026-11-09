@@ -1,0 +1,146 @@
+' ==============================================================================
+' 4-6-zg-customs-management-API.puml
+'
+' Svrha:    Grupira predložene HTTP rute za članstva, upravljanje autoservisom,
+'           administratorske radnje i Stripe obavijesti.
+' Izvori:   docs/1-Projekt.md;
+'           docs/2-Analiza-zahtjeva.md.
+' Status:   Konceptualni prijedlog; ne potvrđuje implementaciju.
+' Praćenje: Model uskladiti s odlukama o poslovnim pravilima i realizacijom;
+'           otvorena pitanja i predložene odluke označeni su u bilješkama.
+'
+' Diagram level: Application Interface Design
+' Diagram type:  REST API Overview
+' ==============================================================================
+
+@startuml
+title ZG Customs - API za upravljanje autoservisom i platformom
+
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+skinparam ArrowColor #212529
+left to right direction
+skinparam classAttributeIconSize 0
+
+skinparam class {
+    BackgroundColor #E7F1FF
+    BorderColor #0D6EFD
+}
+
+skinparam note {
+    BackgroundColor #F8F9FA
+    BorderColor #212529
+    FontColor #212529
+}
+
+' ==============================================================================
+' Prijave autoservisa i upravljanje članstvom
+' ==============================================================================
+
+class "Prijave i tim" as Team <<REST>> {
+    POST /api/workshop-applications
+    POST /api/workshops/{id}/membership-requests
+    GET /api/workshops/{id}/membership-requests
+    POST /api/membership-requests/{id}/decision
+    GET /api/workshops/{id}/mechanics
+    DELETE /api/workshops/{id}/memberships/{membershipId}
+}
+
+' ==============================================================================
+' Poslovanje autoservisa i pretplata
+' ==============================================================================
+
+class "Upravljanje autoservisom" as Workshop <<REST>> {
+    GET /api/workshops/{id}
+    PATCH /api/workshops/{id}
+    PUT /api/workshops/{id}/opening-hours
+    GET /api/workshops/{id}/overview
+    GET /api/workshops/{id}/calendar
+    GET /api/workshops/{id}/statistics
+    GET /api/workshops/{id}/subscription
+    POST /api/workshops/{id}/subscription/checkout-session
+    POST /api/workshops/{id}/subscription/portal-session
+}
+
+' ==============================================================================
+' Administratorske ovlasti nad platformom
+' ==============================================================================
+
+class "Administracija" as Admin <<REST>> {
+    GET /api/admin/overview
+    GET /api/admin/workshop-applications
+    POST /api/admin/workshop-applications/{id}/decision
+    GET /api/admin/workshops
+    PATCH /api/admin/workshops/{id}/status
+    GET /api/admin/users
+    PATCH /api/admin/users/{id}/status
+    GET /api/admin/subscriptions
+    POST /api/admin/subscription-prices
+    GET /api/admin/statistics
+}
+
+' ==============================================================================
+' Ulazne obavijesti pružatelja naplate
+' ==============================================================================
+
+class "Stripe obavijesti" as Stripe <<REST>> {
+    POST /api/webhooks/stripe
+}
+
+' ==============================================================================
+' Raspored API područja
+' ==============================================================================
+
+' Skrivene veze određuju raspored, a ne ovisnosti ili slijed HTTP poziva.
+Team -[hidden]-> Workshop
+Workshop -[hidden]-> Admin
+Admin -[hidden]-> Stripe
+
+' ==============================================================================
+' Ovlasti i pravila integracije
+' ==============================================================================
+
+note bottom of Team
+    Prijava autoservisa: voditelj, naziv i dokaz vlasništva.
+    Zahtjev članstva: serviser; odluka Accepted/Rejected: voditelj.
+    Uklanjanje članstva čuva povijest i vraća popis
+    budućih dodjela za preraspodjelu.
+end note
+
+note bottom of Workshop
+    Samo voditelj vlastitog autoservisa za upravljačke radnje.
+    Kalendar: from, to, mechanicId; overview sadrži i nedodijeljene servise.
+    Statistika: završeni servisi po vrsti, prosječno trajanje,
+    ukupna vrijednost.
+    Stripe session vraća URL checkouta / portala.
+    Pretplata se ne aktivira povratkom preglednika na success URL.
+end note
+
+note bottom of Admin
+    Samo administrator; nema javne registracije administratora.
+    Korisnici: filtri role/status; status Active/Deactivated.
+    Autoservisi: Active/Deactivated; odbijanje je stanje prijave.
+    Cijena pretplate je verzionirana; primjena na postojeće pretplate otvorena.
+end note
+
+note bottom of Stripe
+    Vanjski callback, bez korisničke sesije.
+    Provjera Stripe potpisa nad izvornim tijelom zahtjeva.
+    Jedinstveni event ID sprječava dvostruku obradu.
+    2xx tek nakon trajne pohrane; 5xx omogućuje ponavljanje.
+    Iznose i status potvrđuje Stripe, ne klijent.
+end note
+
+' ==============================================================================
+' Zajednički HTTP ishodi
+' ==============================================================================
+
+legend bottom
+    Sve rute ovdje su prijedlog prema workflowu, nisu implementirani endpointi.
+    GET 200; kreiranje 201; izmjene 200/204; uklanjanje članstva 200 s budućim dodjelama.
+    400 nevaljan unos/potpis; 401 bez prijave; 403 ovlasti; 404 resurs; 409 stanje; 5xx pohrana.
+    Statistika platforme: korisnici, autoservisi, završeni servisi, aktivne pretplate.
+endlegend
+
+@enduml
