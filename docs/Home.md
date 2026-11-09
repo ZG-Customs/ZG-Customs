@@ -64,6 +64,8 @@ Navedite pristup koji tim stvarno koristi. Tim koji razvija CrisisMap može orga
 
 ## Pravila dokumentacije
 
+Za ažuriranje projektnih dijagrama i preuzimanje generiranih SVG slika pogledajte [Upute za UML dijagrame](puml/Readme.md).
+
 Dokumentacija se sastoji od međusobno povezanih Markdown stranica. Obavezni UML dijagrami izrađuju se u PlantUML-u, uz PlantUML izvor u dokumentaciji sačuvajte i čitljivu sliku. Primjeri u ovom predlošku kolegija pokazuju kako nešto dokumentirati; nisu dio rezultata studentskog projekta.
 
 <details>
