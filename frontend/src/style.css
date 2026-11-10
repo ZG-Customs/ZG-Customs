@@ -27,7 +27,42 @@ main {
   letter-spacing: -0.055em;
 }
 
-.intro h1 span { color: #b33f2a; }
+.intro h1 span {
+  color: #b33f2a;
+}
+
+.login-options {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-top: 2rem;
+}
+
+.login-options button {
+  min-width: 9rem;
+  padding: 0.8rem 1.2rem;
+  border: 1px solid #242320;
+  border-radius: 4px;
+  background: #242320;
+  color: #faf8f4;
+  font: inherit;
+  font-weight: 650;
+  cursor: pointer;
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease;
+}
+
+.login-options button:hover {
+  border-color: #b33f2a;
+  background: #b33f2a;
+}
+
+.login-options button:focus-visible {
+  outline: 3px solid #b33f2a;
+  outline-offset: 3px;
+}
 
 .intro p {
   margin: 1rem 0 0;
@@ -48,7 +83,15 @@ main {
   cursor: pointer;
 }
 
-.catalog summary::marker { color: #b33f2a; }
-.catalog summary:focus-visible { outline: 2px solid #b33f2a; }
-.catalog ul { padding-inline-start: 1.5rem; }
-.catalog li + li { margin-top: 0.5rem; }
+.catalog summary::marker {
+  color: #b33f2a;
+}
+.catalog summary:focus-visible {
+  outline: 2px solid #b33f2a;
+}
+.catalog ul {
+  padding-inline-start: 1.5rem;
+}
+.catalog li + li {
+  margin-top: 0.5rem;
+}

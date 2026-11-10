@@ -1,6 +1,6 @@
-import { StrictMode, useEffect, useState } from 'react';
-import { createRoot } from 'react-dom/client';
-import './style.css';
+import { StrictMode, useEffect, useState } from "react";
+import { createRoot } from "react-dom/client";
+import "./style.css";
 
 type ServiceType = {
   id: number;
@@ -11,7 +11,7 @@ type ServiceType = {
 
 function App() {
   const [services, setServices] = useState<ServiceType[]>([]);
-  const [state, setState] = useState<'loading' | 'ready' | 'error'>('loading');
+  const [state, setState] = useState<"loading" | "ready" | "error">("loading");
 
   useEffect(() => {
     const controller = new AbortController();
@@ -20,11 +20,11 @@ function App() {
 
     async function loadServices() {
       try {
-        const response = await fetch('/api/service-types', {
+        const response = await fetch("/api/service-types", {
           signal: controller.signal,
         });
         if (!response.ok) {
-          throw new Error('Service catalog unavailable');
+          throw new Error("Service catalog unavailable");
         }
 
         const data: unknown = await response.json();
@@ -32,22 +32,22 @@ function App() {
           !Array.isArray(data) ||
           !data.every(
             (item) =>
-              typeof item?.id === 'number' &&
-              typeof item?.code === 'string' &&
-              typeof item?.name === 'string' &&
-              typeof item?.description === 'string'
+              typeof item?.id === "number" &&
+              typeof item?.code === "string" &&
+              typeof item?.name === "string" &&
+              typeof item?.description === "string",
           )
         ) {
-          throw new Error('Invalid service catalog');
+          throw new Error("Invalid service catalog");
         }
 
         if (active) {
           setServices(data);
-          setState('ready');
+          setState("ready");
         }
       } catch {
         if (active) {
-          setState('error');
+          setState("error");
         }
       } finally {
         window.clearTimeout(timeout);
@@ -66,21 +66,31 @@ function App() {
   return (
     <main>
       <header className="intro">
-        <h1>ZG <span>-</span> Customs</h1>
+        <h1>
+          ZG <span>-</span> Customs
+        </h1>
+        <nav className="login-options" aria-label="Prijava prema ulozi">
+          <button type="button">Korisnik</button>
+          <button type="button">Mehaničar</button>
+          <button type="button">Menadžer</button>
+        </nav>
         <p>Uskoro!</p>
       </header>
 
       <details className="catalog">
         <summary>Vrste servisa</summary>
         <div role="status" aria-live="polite">
-          {state === 'loading' && <p>Učitavanje podataka…</p>}
-          {state === 'error' && (
-            <p>Podatke trenutačno nije moguće učitati. Pokušajte osvježiti stranicu.</p>
+          {state === "loading" && <p>Učitavanje podataka…</p>}
+          {state === "error" && (
+            <p>
+              Podatke trenutačno nije moguće učitati. Pokušajte osvježiti
+              stranicu.
+            </p>
           )}
         </div>
 
-        {state === 'ready' && (
-          services.length > 0 ? (
+        {state === "ready" &&
+          (services.length > 0 ? (
             <ul>
               {services.map((service) => (
                 <li key={service.id}>
@@ -90,15 +100,14 @@ function App() {
             </ul>
           ) : (
             <p>Još nema dodanih vrsta servisa.</p>
-          )
-        )}
+          ))}
       </details>
     </main>
   );
 }
 
-createRoot(document.getElementById('root')!).render(
+createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <App />
-  </StrictMode>
+  </StrictMode>,
 );
