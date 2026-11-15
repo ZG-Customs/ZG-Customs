@@ -42,6 +42,12 @@ services:
       DB_URL: jdbc:postgresql://postgres:5432/zg_customs
       DB_USER: zg_customs
       DB_PASSWORD: ${DB_PASSWORD:?Run scripts/init-env.sh first}
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-}
+      OIDC_ISSUER: ${OIDC_ISSUER:-}
+      OIDC_CLIENT_ID: ${OIDC_CLIENT_ID:-}
+      OIDC_CLIENT_SECRET: ${OIDC_CLIENT_SECRET:-}
+      OIDC_PUBLIC_URL: ${OIDC_PUBLIC_URL:-}
+      OIDC_SECURE_COOKIE: ${OIDC_SECURE_COOKIE:-true}
     depends_on:
       postgres:
         condition: service_healthy
