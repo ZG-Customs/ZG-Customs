@@ -88,9 +88,25 @@ class AccountAccessIntegrationTests {
         var redirect = UriComponentsBuilder
                 .fromUriString(login.getResponse().getRedirectedUrl()).build();
         String state = redirect.getQueryParams().getFirst("state");
+        assertThat(redirect.getQueryParams().getFirst("prompt")).isEqualTo("select_account");
         mvc.perform(get("/api/auth/callback/external").session(session)
                 .param("error", "access_denied").param("state", state))
                 .andExpect(redirectedUrl("/?login=failed"));
+        assertThat(session.isInvalid()).isTrue();
+        mvc.perform(get("/api/me")).andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void logoutInvalidatesTheLocalSession() throws Exception {
+        var user = identity("logout");
+        accounts.resolve(user);
+        var session = new MockHttpSession();
+        mvc.perform(get("/api/me").session(session).with(oidcLogin().oidcUser(user)))
+                .andExpect(status().isOk());
+
+        mvc.perform(post("/api/auth/logout").session(session).with(oidcLogin().oidcUser(user)).with(csrf()))
+                .andExpect(status().isNoContent())
+                .andExpect(cookie().maxAge("JSESSIONID", 0));
         assertThat(session.isInvalid()).isTrue();
         mvc.perform(get("/api/me")).andExpect(status().isUnauthorized());
     }

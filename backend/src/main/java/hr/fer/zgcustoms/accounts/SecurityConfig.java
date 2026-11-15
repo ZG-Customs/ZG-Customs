@@ -8,6 +8,7 @@ import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
+import org.springframework.security.oauth2.client.web.DefaultOAuth2AuthorizationRequestResolver;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.OAuth2Error;
 import org.springframework.security.web.SecurityFilterChain;
@@ -32,12 +33,17 @@ class SecurityConfig {
                     (request, response, exception) -> response.sendError(401)))
             .requestCache(cache -> cache.disable())
             .logout(logout -> logout.logoutUrl("/api/auth/logout")
+                    .deleteCookies("JSESSIONID")
                     .logoutSuccessHandler((request, response, authentication) -> response.setStatus(204)));
 
-        if (registrations.getIfAvailable() != null) {
+        var clients = registrations.getIfAvailable();
+        if (clients != null) {
             var delegate = new OidcUserService();
+            var authorization = new DefaultOAuth2AuthorizationRequestResolver(clients, "/api/auth/login");
+            authorization.setAuthorizationRequestCustomizer(request ->
+                    request.additionalParameters(parameters -> parameters.put("prompt", "select_account")));
             http.oauth2Login(login -> login
-                    .authorizationEndpoint(endpoint -> endpoint.baseUri("/api/auth/login"))
+                    .authorizationEndpoint(endpoint -> endpoint.authorizationRequestResolver(authorization))
                     .redirectionEndpoint(endpoint -> endpoint.baseUri("/api/auth/callback/*"))
                     .userInfoEndpoint(info -> info.oidcUserService(request -> {
                         var identity = delegate.loadUser(request);
