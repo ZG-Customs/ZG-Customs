@@ -42,6 +42,10 @@ Implementirana je tablica `service_types`: `id` je primarni ključ, `code` jedin
 
 Vanjski identitet povezuje se s lokalnim korisnikom parom `oidcIssuer` i `oidcSubject`. Workshop.managerId referencira User.id; obveznost i jedinstvenost ograničavaju autoservis na jednog voditelja i voditelja na najviše jedan autoservis. Prijava sadrži applicantId; autoservis nastaje tek prihvaćanjem prijave. Stoga WorkshopStatus sadrži ACTIVE i DEACTIVATED, dok PENDING pripada prijavi. Članstvo čuva povijest pristupanja i uklanjanja servisera.
 
+Lokalni račun započinje u stanju `UNREGISTERED`. Vlasnik vozila postaje aktivan pri registraciji, a računi servisera i voditelja ostaju `PENDING` do prihvaćanja članstva odnosno prijave autoservisa. OIDC konfiguracija i inicijalno postavljanje administratora opisani su u [uputama za vanjsku prijavu](oidc.md).
+
+U PostgreSQL-u par `users.oidc_issuer` i `users.oidc_subject` jedinstveno povezuje vanjski identitet s lokalnim računom. Uloge se spremaju u `roles` i `user_roles`, a specijalizacije u `users.specializations`. API mapira uloge `CLIENT` i `WORKSHOP_MANAGER` na `OWNER` i `MANAGER`. Tablica `membership_requests` čuva povijest zahtjeva, a `workshop_memberships` prihvaćena članstva.
+
 ![Slika 4.3. Rezervacije i servisna evidencija](<./assets/diagrams/4-3-ZG Customs-service-domain-CD.svg>)
 
 **Slika 4.3. Rezervacije i servisna evidencija** — [PlantUML izvor](./puml/4-3-zg-customs-service-domain-CD.puml).

@@ -1,5 +1,6 @@
 import { StrictMode, useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
+import { AccountPanel } from './auth/AccountPanel';
 import './style.css';
 
 type ServiceType = {
@@ -70,6 +71,7 @@ function App() {
         <p>Uskoro!</p>
       </header>
 
+      <AccountPanel />
       <details className="catalog">
         <summary>Vrste servisa</summary>
         <div role="status" aria-live="polite">

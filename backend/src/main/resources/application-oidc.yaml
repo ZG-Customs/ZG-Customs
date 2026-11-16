@@ -1,0 +1,22 @@
+spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          external:
+            provider: external
+            client-id: ${OIDC_CLIENT_ID}
+            client-secret: ${OIDC_CLIENT_SECRET}
+            authorization-grant-type: authorization_code
+            scope: openid,profile,email
+            redirect-uri: ${OIDC_PUBLIC_URL}/api/auth/callback/{registrationId}
+        provider:
+          external:
+            issuer-uri: ${OIDC_ISSUER}
+server:
+  servlet:
+    session:
+      cookie:
+        secure: ${OIDC_SECURE_COOKIE:true}
+        http-only: true
+        same-site: lax
