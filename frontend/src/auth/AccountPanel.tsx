@@ -150,7 +150,7 @@ export function AccountPanel() {
                 </label>
               ) : (
                 <>
-                  <label>Naziv autoservisa <input name="name" required maxLength={160} /></label>
+                  <label>Naziv autoservisa <input name="name" required maxLength={150} /></label>
                   <label>Kontakt autoservisa <input name="contact" required maxLength={300} /></label>
                   <label>Dokaz vlasništva <textarea name="ownershipEvidence" required maxLength={2000} /></label>
                 </>
