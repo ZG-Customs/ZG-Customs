@@ -9,7 +9,23 @@ type ServiceType = {
   description: string;
 };
 
+const blankPagePaths = new Set([
+  "/about",
+  "/login/user",
+  "/login/mechanic",
+  "/login/manager",
+]);
+
 function App() {
+  const path = window.location.pathname.replace(/\/+$/, "") || "/";
+  return blankPagePaths.has(path) ? (
+    <div className="blank-page" />
+  ) : (
+    <LandingPage />
+  );
+}
+
+function LandingPage() {
   const [services, setServices] = useState<ServiceType[]>([]);
   const [state, setState] = useState<"loading" | "ready" | "error">("loading");
 
@@ -64,45 +80,70 @@ function App() {
   }, []);
 
   return (
-    <main>
-      <header className="intro">
-        <h1>
-          ZG <span>-</span> Customs
-        </h1>
-        <nav className="login-options" aria-label="Prijava prema ulozi">
-          <button type="button">Korisnik</button>
-          <button type="button">Mehaničar</button>
-          <button type="button">Menadžer</button>
+    <div className="site-shell">
+      <header className="site-header">
+        <a
+          className="brand"
+          href="/"
+          aria-label="ZG Customs — početna stranica"
+        >
+          <span className="brand-mark">ZG</span>
+          <span className="brand-name">CUSTOMS</span>
+        </a>
+
+        <nav className="site-nav" aria-label="Glavna navigacija">
+          <a href="/about">O nama</a>
+          <a href="/login/mechanic">Prijava za mehaničare</a>
+          <a href="/login/manager">Prijava za menadžere</a>
         </nav>
-        <p>Uskoro!</p>
       </header>
 
-      <details className="catalog">
-        <summary>Vrste servisa</summary>
-        <div role="status" aria-live="polite">
-          {state === "loading" && <p>Učitavanje podataka…</p>}
-          {state === "error" && (
-            <p>
-              Podatke trenutačno nije moguće učitati. Pokušajte osvježiti
-              stranicu.
+      <main className="page-content">
+        <section className="hero" aria-labelledby="hero-title">
+          <div className="hero-copy">
+            <p className="eyebrow">ZG CUSTOMS</p>
+            <h1 id="hero-title">ZG Customs</h1>
+            <p className="hero-description">
+              Dogovorite servis, pratite radove i čuvajte povijest radova svog
+              vozila.
             </p>
-          )}
-        </div>
+            <a className="primary-button" href="/login/user">
+              Prijava za korisnike <span aria-hidden="true">↗</span>
+            </a>
+          </div>
+        </section>
 
-        {state === "ready" &&
-          (services.length > 0 ? (
-            <ul>
-              {services.map((service) => (
-                <li key={service.id}>
-                  <strong>{service.name}</strong> — {service.description}
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p>Još nema dodanih vrsta servisa.</p>
-          ))}
-      </details>
-    </main>
+        <details className="catalog">
+          <summary>
+            Vrste servisa <span aria-hidden="true">＋</span>
+          </summary>
+          <div role="status" aria-live="polite">
+            {state === "loading" && <p>Učitavanje podataka…</p>}
+            {state === "error" && (
+              <p>
+                Podatke trenutačno nije moguće učitati. Pokušajte osvježiti
+                stranicu.
+              </p>
+            )}
+          </div>
+
+          {state === "ready" &&
+            (services.length > 0 ? (
+              <ul>
+                {services.map((service) => (
+                  <li key={service.id}>
+                    <strong>{service.name}</strong> — {service.description}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p>Još nema dodanih vrsta servisa.</p>
+            ))}
+        </details>
+      </main>
+
+      <footer className="checkerboard" aria-hidden="true" />
+    </div>
   );
 }
 
