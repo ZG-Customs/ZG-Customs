@@ -1,5 +1,6 @@
 import { StrictMode, useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
+import { AccountPanel } from "./auth/AccountPanel";
 import "./style.css";
 
 type ServiceType = {
@@ -9,19 +10,46 @@ type ServiceType = {
   description: string;
 };
 
-const blankPagePaths = new Set([
-  "/about",
-  "/login/user",
-  "/login/mechanic",
-  "/login/manager",
-]);
+const loginPaths = new Set(["/login/user", "/login/mechanic", "/login/manager"]);
 
 function App() {
   const path = window.location.pathname.replace(/\/+$/, "") || "/";
-  return blankPagePaths.has(path) ? (
-    <div className="blank-page" />
-  ) : (
-    <LandingPage />
+  if (path === "/about") {
+    return <div className="blank-page" />;
+  }
+
+  return (
+    <div className="site-shell">
+      <header className="site-header">
+        <a
+          className="brand"
+          href="/"
+          aria-label="ZG Customs — početna stranica"
+        >
+          <span className="brand-mark">ZG</span>
+          <span className="brand-name">CUSTOMS</span>
+        </a>
+
+        <nav className="site-nav" aria-label="Glavna navigacija">
+          <a href="/about">O nama</a>
+          <a href="/login/mechanic">Prijava za mehaničare</a>
+          <a href="/login/manager">Prijava za menadžere</a>
+        </nav>
+      </header>
+
+      <main className="page-content">
+        {loginPaths.has(path) ? (
+          <>
+            <h1>Korisnički račun</h1>
+            <AccountPanel />
+          </>
+        ) : (
+          <LandingPage />
+        )}
+      </main>
+
+      <footer className="checkerboard" aria-hidden="true" />
+    </div>
   );
 }
 
@@ -80,70 +108,51 @@ function LandingPage() {
   }, []);
 
   return (
-    <div className="site-shell">
-      <header className="site-header">
-        <a
-          className="brand"
-          href="/"
-          aria-label="ZG Customs — početna stranica"
-        >
-          <span className="brand-mark">ZG</span>
-          <span className="brand-name">CUSTOMS</span>
-        </a>
+    <>
+      <section className="hero" aria-labelledby="hero-title">
+        <div className="hero-copy">
+          <p className="eyebrow">ZG CUSTOMS</p>
+          <h1 id="hero-title">ZG Customs</h1>
+          <p className="hero-description">
+            Dogovorite servis, pratite radove i čuvajte povijest radova svog
+            vozila.
+          </p>
+          <a className="primary-button" href="/login/user">
+            Prijava za korisnike <span aria-hidden="true">↗</span>
+          </a>
+        </div>
+      </section>
 
-        <nav className="site-nav" aria-label="Glavna navigacija">
-          <a href="/about">O nama</a>
-          <a href="/login/mechanic">Prijava za mehaničare</a>
-          <a href="/login/manager">Prijava za menadžere</a>
-        </nav>
-      </header>
+      <AccountPanel />
 
-      <main className="page-content">
-        <section className="hero" aria-labelledby="hero-title">
-          <div className="hero-copy">
-            <p className="eyebrow">ZG CUSTOMS</p>
-            <h1 id="hero-title">ZG Customs</h1>
-            <p className="hero-description">
-              Dogovorite servis, pratite radove i čuvajte povijest radova svog
-              vozila.
+      <details className="catalog">
+        <summary>
+          Vrste servisa <span aria-hidden="true">＋</span>
+        </summary>
+        <div role="status" aria-live="polite">
+          {state === "loading" && <p>Učitavanje podataka…</p>}
+          {state === "error" && (
+            <p>
+              Podatke trenutačno nije moguće učitati. Pokušajte osvježiti
+              stranicu.
             </p>
-            <a className="primary-button" href="/login/user">
-              Prijava za korisnike <span aria-hidden="true">↗</span>
-            </a>
-          </div>
-        </section>
+          )}
+        </div>
 
-        <details className="catalog">
-          <summary>
-            Vrste servisa <span aria-hidden="true">＋</span>
-          </summary>
-          <div role="status" aria-live="polite">
-            {state === "loading" && <p>Učitavanje podataka…</p>}
-            {state === "error" && (
-              <p>
-                Podatke trenutačno nije moguće učitati. Pokušajte osvježiti
-                stranicu.
-              </p>
-            )}
-          </div>
-
-          {state === "ready" &&
-            (services.length > 0 ? (
-              <ul>
-                {services.map((service) => (
-                  <li key={service.id}>
-                    <strong>{service.name}</strong> — {service.description}
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p>Još nema dodanih vrsta servisa.</p>
-            ))}
-        </details>
-      </main>
-
-      <footer className="checkerboard" aria-hidden="true" />
-    </div>
+        {state === "ready" &&
+          (services.length > 0 ? (
+            <ul>
+              {services.map((service) => (
+                <li key={service.id}>
+                  <strong>{service.name}</strong> — {service.description}
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p>Još nema dodanih vrsta servisa.</p>
+          ))}
+      </details>
+    </>
   );
 }
 

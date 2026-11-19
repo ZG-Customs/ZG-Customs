@@ -1,0 +1,221 @@
+' ==============================================================================
+' 4-3-zg-customs-accounts-domain-CD.puml
+'
+' Svrha:    Prikazuje identitete, prijave autoservisa, članstva i pretplate
+'           te njihove veze i ograničenja višestrukosti.
+' Izvori:   docs/1-Projekt.md;
+'           docs/2-Analiza-zahtjeva.md.
+' Status:   Konceptualni prijedlog; ne potvrđuje implementaciju.
+' Praćenje: Model uskladiti s odlukama o poslovnim pravilima i realizacijom;
+'           otvorena pitanja i predložene odluke označeni su u bilješkama.
+'
+' Diagram level: Structural / Domain Design
+' Diagram type:  Class Diagram
+' ==============================================================================
+
+@startuml
+title ZG Customs - Domenski model računa i autoservisa
+
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+skinparam ArrowColor #212529
+hide methods
+
+skinparam class {
+    BackgroundColor #E7F1FF
+    BorderColor #0D6EFD
+}
+
+skinparam note {
+    BackgroundColor #F8F9FA
+    BorderColor #212529
+    FontColor #212529
+}
+
+' ==============================================================================
+' Identitet i profil servisera
+' ==============================================================================
+
+class User {
+    id : Long
+    oidcIssuer : String
+    oidcSubject : String
+    role : UserRole
+    status : AccountStatus
+    contactDetails : String
+}
+
+class MechanicProfile {
+    specializations : Text
+}
+
+' ==============================================================================
+' Autoservis, pristupanje timu i radno vrijeme
+' ==============================================================================
+
+class Workshop {
+    id : Long
+    managerId : Long {unique, not null}
+    name : String
+    contactDetails : String
+    status : WorkshopStatus
+}
+
+class WorkshopApplication {
+    applicantId : Long {not null}
+    status : WorkshopApplicationStatus
+    decidedAt : DateTime [0..1]
+}
+
+class Membership {
+    status : MembershipStatus
+    requestedAt : DateTime
+    endedAt : DateTime [0..1]
+}
+
+class OpeningHours {
+    dayOfWeek : DayOfWeek
+    opensAt : Time
+    closesAt : Time
+}
+
+' ==============================================================================
+' Pretplata i verzioniranje cijene
+' ==============================================================================
+
+class Subscription {
+    stripeCustomerId : String
+    stripeSubscriptionId : String
+    status : SubscriptionStatus
+    periodEnd : DateTime [0..1]
+}
+
+class SubscriptionPrice {
+    amount : Decimal
+    currency : String
+    stripePriceId : String
+    effectiveFrom : DateTime
+}
+
+' ==============================================================================
+' Enumeracije - dopuštene vrijednosti domenskih atributa
+' ==============================================================================
+
+' Zasebni životni ciklusi imaju zasebne tipove i kada dijele iste vrijednosti.
+' Enumeracije određuju stanja; pravila prijelaza i ovlasti provjerava aplikacija.
+
+enum UserRole {
+    OWNER
+    MECHANIC
+    MANAGER
+    ADMIN
+}
+
+enum AccountStatus {
+    ACTIVE
+    DEACTIVATED
+}
+
+enum WorkshopStatus {
+    ACTIVE
+    DEACTIVATED
+}
+
+enum WorkshopApplicationStatus {
+    PENDING
+    ACCEPTED
+    REJECTED
+}
+
+enum MembershipStatus {
+    PENDING
+    ACCEPTED
+    REJECTED
+    REMOVED
+}
+
+enum DayOfWeek {
+    MONDAY
+    TUESDAY
+    WEDNESDAY
+    THURSDAY
+    FRIDAY
+    SATURDAY
+    SUNDAY
+}
+
+enum SubscriptionStatus {
+    ACTIVE
+    INACTIVE
+}
+
+' Ovisnosti povezuju atribute s njihovim tipovima; nisu veze između zapisa.
+User ..> UserRole : role
+User ..> AccountStatus : status
+Workshop ..> WorkshopStatus : status
+WorkshopApplication ..> WorkshopApplicationStatus : status
+Membership ..> MembershipStatus : status
+OpeningHours ..> DayOfWeek : dayOfWeek
+Subscription ..> SubscriptionStatus : status
+
+' ==============================================================================
+' Veze i višestrukosti
+' ==============================================================================
+
+' Članstvo i prijava zasebni su zapisi; odluka o zahtjevu ne briše njegovu povijest.
+User "1" -- "0..1" MechanicProfile
+User "1" -- "0..*" WorkshopApplication : podnositelj (voditelj)
+WorkshopApplication "1" -- "0..1" Workshop : odobrena prijava
+User "1" -- "0..1" Workshop : vlasnik / voditelj
+MechanicProfile "1" -- "0..*" Membership
+Workshop "1" -- "0..*" Membership
+Workshop "1" -- "0..*" OpeningHours
+Workshop "1" -- "0..*" Subscription : povijest pretplata
+SubscriptionPrice "1" -- "0..*" Subscription
+
+' ==============================================================================
+' Pravila članstva, pretplate i vanjskog identiteta
+' ==============================================================================
+
+note bottom of Membership
+    Najviše jedno aktivno članstvo servisera prema jednini autoservisa u workflowu.
+    Samo voditelj odabranog autoservisa odlučuje.
+    REMOVED čuva povijest, buduće dodjele se preraspodjeljuju.
+end note
+
+note bottom of Subscription
+    Najviše jedna trenutačna pretplata po autoservisu.
+    Stripe statusi mapiraju se na poslovni ACTIVE/INACTIVE.
+    Kartični podaci ostaju u Stripeu.
+    Primjena nove cijene na postojeće pretplate je otvorena.
+end note
+
+note top of User
+    Par (issuer, subject) jedinstveno povezuje vanjski identitet.
+    Lokalna lozinka nije dio modela.
+    Status računa vrijedi i za vlasnika vozila (OWNER):
+    ACTIVE - račun je aktivan.
+    DEACTIVATED - račun je deaktiviran i nema pristup zaštićenim radnjama.
+    Autoservis ima točno jednog vlasnika / voditelja (MANAGER).
+    Voditelj može upravljati najviše jednim autoservisom.
+    Prije odobrenja prijave voditelj još nema autoservis.
+    Uloga OWNER označava vlasnika vozila, a ne autoservisa.
+    Odbijena prijava nije aktivan autoservis.
+end note
+
+note right of Workshop
+    managerId je strani ključ na User.id (uloga MANAGER).
+    NOT NULL osigurava jednog voditelja po autoservisu;
+    UNIQUE ograničava voditelja na najviše jedan autoservis.
+    Atribut i UML veza predstavljaju istu povezanost.
+end note
+
+note right of WorkshopApplication
+    applicantId je strani ključ na User.id podnositelja.
+    Poslužitelj ga preuzima iz autentificiranog računa.
+    Odobrenjem prijave applicantId postaje Workshop.managerId;
+    prije spremanja provjerava se uloga i postojeći autoservis.
+end note
+
+@enduml

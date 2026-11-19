@@ -64,7 +64,7 @@ class BackendIntegrationTests {
                 .POST(HttpRequest.BodyPublishers.ofString("{}"))
                 .header("Content-Type", "application/json").build(), HttpResponse.BodyHandlers.ofString());
         assertThat(response.statusCode()).isEqualTo(405);
-        assertThat(get("/actuator/env").statusCode()).isEqualTo(404);
+        assertThat(get("/actuator/env").statusCode()).isEqualTo(401);
     }
 
     private HttpResponse<String> get(String path) throws Exception {

@@ -1,0 +1,142 @@
+' ==============================================================================
+' 4-6-zg-customs-customer-service-API.puml
+'
+' Svrha:    Grupira predložene HTTP rute za račune, vozila, rezervacije,
+'           servisne radove, dokumente i ocjene prema poslovnom području.
+' Izvori:   docs/1-Projekt.md;
+'           docs/2-Analiza-zahtjeva.md.
+' Status:   Konceptualni prijedlog; ne potvrđuje implementaciju.
+' Praćenje: Model uskladiti s odlukama o poslovnim pravilima i realizacijom;
+'           otvorena pitanja i predložene odluke označeni su u bilješkama.
+'
+' Diagram level: Application Interface Design
+' Diagram type:  REST API Overview
+' ==============================================================================
+
+@startuml
+title ZG Customs - API za korisničke i servisne postupke
+
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+skinparam ArrowColor #212529
+left to right direction
+skinparam classAttributeIconSize 0
+
+skinparam class {
+    BackgroundColor #E7F1FF
+    BorderColor #0D6EFD
+}
+
+skinparam note {
+    BackgroundColor #F8F9FA
+    BorderColor #212529
+    FontColor #212529
+}
+
+' ==============================================================================
+' Račun i javni katalog
+' ==============================================================================
+
+class "Račun i katalog" as Account <<REST>> {
+    GET /api/me
+    PATCH /api/me
+    DELETE /api/me
+    POST /api/auth/logout
+    GET /api/workshops
+    GET /api/service-types
+}
+
+' ==============================================================================
+' Vozila i dogovor rezervacije
+' ==============================================================================
+
+class "Vozila i rezervacije" as Booking <<REST>> {
+    GET /api/vehicles
+    POST /api/vehicles
+    DELETE /api/vehicles/{id}
+    GET /api/vehicles/{id}/services
+    POST /api/bookings
+    GET /api/bookings
+    GET /api/bookings/{id}
+    POST /api/bookings/{id}/decision
+    POST /api/bookings/{id}/appointment-proposals
+    POST /api/bookings/{id}/appointment-proposals/{proposalId}/decision
+    GET /api/bookings/{id}/calendar.ics
+}
+
+' ==============================================================================
+' Servisni radovi, dodjele i dodatne ponude
+' ==============================================================================
+
+class "Servis i dodatni radovi" as Service <<REST>> {
+    GET /api/services
+    GET /api/services/{id}
+    PUT /api/services/{id}/assignment
+    POST /api/services/{id}/status-changes
+    POST /api/services/{id}/work-logs
+    POST /api/services/{id}/completion
+    GET /api/services/{id}/offers
+    POST /api/services/{id}/offers
+    POST /api/offers/{id}/decision
+}
+
+' ==============================================================================
+' Dokumenti završenog servisa i ocjene
+' ==============================================================================
+
+class "Dokumenti i ocjene" as Documents <<REST>> {
+    GET /api/services/{id}/invoice
+    GET /api/services/{id}/invoice/download
+    POST /api/services/{id}/review
+    GET /api/services/{id}/review
+}
+
+' ==============================================================================
+' Raspored API područja
+' ==============================================================================
+
+' Skrivene veze određuju raspored, a ne ovisnosti ili slijed HTTP poziva.
+Account -[hidden]-> Booking
+Booking -[hidden]-> Service
+Service -[hidden]-> Documents
+
+' ==============================================================================
+' Ovlasti, podaci zahtjeva i uvjeti pristupa
+' ==============================================================================
+
+note bottom of Booking
+    Vlasnik: vlastita vozila, rezervacije i odluka o prijedlogu.
+    Voditelj: odluka o rezervaciji i prijedlog termina svojeg autoservisa.
+    POST bookings: vehicleId, workshopId, serviceTypeId, requestedAt.
+    POST decision: Accepted / Rejected; prijedlog: proposedAt.
+    .ics: samo Confirmed; Content-Type text/calendar.
+end note
+
+note bottom of Service
+    Dodjela: voditelj; aktivni član njegova autoservisa.
+    Evidencija, status i ponude: dodijeljeni serviser.
+    Odluka o ponudi: vlasnik pripadajućeg vozila.
+    GET liste ograničene ulogom, vlasnikom i autoservisom.
+    Filtri: status, mechanicId, from, to, sort, page, size.
+    Completion: finalCost, finalNotes; atomska promjena u Done.
+end note
+
+note bottom of Documents
+    Dokumenti: vlasnik završenog servisa.
+    Povijest voditelja ograničena na radove njegova autoservisa.
+    Review: rating 1-5, comment opcionalan; rok mjesec dana.
+end note
+
+' ==============================================================================
+' Zajednički HTTP ishodi
+' ==============================================================================
+
+legend bottom
+    Prijedlog HTTP ugovora: GET 200; kreiranje 201; brisanje/odjava 204.
+    400 nevaljan unos; 401 bez prijave; 403 nedopušten pristup;
+    404 nepostojeći resurs; 409 sukob stanja/verzije; 5xx greška spremanja.
+    Sve zaštićene rute provjeravaju aktivan račun i ovlasti na poslužitelju.
+endlegend
+
+@enduml

@@ -48,3 +48,8 @@ printf '%s\n' "$revision" > "$root/state/current-sha.tmp"
 mv "$root/state/current-sha.tmp" "$root/state/current-sha"
 rm -f "$root/state/failed-sha"
 echo "Deployed $revision"
+
+# Keep the deployment lock until image maintenance finishes. A housekeeping
+# failure must not mark a healthy deployment as failed.
+ZG_DEPLOY_ROOT="$root" python3 "$root/bin/retain_images.py" --apply ||
+  echo "Image maintenance failed; see deployment log." >&2

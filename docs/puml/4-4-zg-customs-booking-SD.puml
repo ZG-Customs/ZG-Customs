@@ -1,0 +1,130 @@
+' ==============================================================================
+' 4-4-zg-customs-booking-SD.puml
+'
+' Svrha:    Prikazuje zahtjev vlasnika, odluku voditelja, alternativni termin
+'           i dostavu obavijesti nakon uspješne poslovne promjene.
+' Izvori:   docs/1-Projekt.md;
+'           docs/2-Analiza-zahtjeva.md.
+' Status:   Konceptualni prijedlog; ne potvrđuje implementaciju.
+' Praćenje: Model uskladiti s odlukama o poslovnim pravilima i realizacijom;
+'           otvorena pitanja i predložene odluke označeni su u bilješkama.
+'
+' Diagram level: Conceptual Interaction Design
+' Diagram type:  Sequence Diagram
+' ==============================================================================
+
+@startuml
+title ZG Customs - Rezervacija i dogovor servisnog termina
+
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+skinparam ArrowColor #212529
+skinparam maxMessageSize 150
+skinparam sequenceMessageAlign center
+
+skinparam sequence {
+    ParticipantBackgroundColor #E7F1FF
+    ParticipantBorderColor #0D6EFD
+    ActorBackgroundColor #F8F9FA
+    ActorBorderColor #212529
+    LifeLineBorderColor #212529
+}
+
+skinparam note {
+    BackgroundColor #F8F9FA
+    BorderColor #212529
+    FontColor #212529
+}
+
+autonumber
+
+' ==============================================================================
+' Sudionici interakcije
+' ==============================================================================
+
+actor "Vlasnik" as Owner
+actor "Voditelj" as Manager
+participant "Web-klijent" as Web
+participant "API rezervacija" as API
+database "Baza / outbox" as DB
+participant "Radnik obavijesti" as Worker
+participant "Resend" as Mail
+
+' ==============================================================================
+' Faza 1: podnošenje i provjera rezervacije
+' ==============================================================================
+
+Owner -> Web : vozilo, autoservis, usluga, željeni termin
+Web -> API : POST /api/bookings
+API -> API : provjeri prijavu, vlasništvo i podatke
+alt nevaljan unos ili nedopušten pristup
+    API --> Web : 400 / 403; bez rezervacije
+else valjan zahtjev
+    API -> DB : spremi Requested
+    alt pohrana neuspješna
+        DB --> API : rollback
+        API --> Web : 500; nema potvrde uspjeha
+    else spremljeno
+        DB --> API : bookingId
+        API --> Web : 201 Created
+    end
+
+end
+
+' ==============================================================================
+' Faza 2: odluka voditelja i dogovor alternativnog termina
+' ==============================================================================
+
+' Odluka se odnosi na spremljeni zahtjev autoservisa kojim voditelj upravlja.
+... voditelj otvara spremljeni zahtjev ...
+Manager -> API : odluka za rezervaciju vlastitog autoservisa
+API -> API : provjeri ovlasti, verziju i dopušteno stanje
+alt nema ovlasti ili zastarjela odluka
+    API --> Manager : 403 / 409; bez promjene
+else izravno prihvaćanje ili odbijanje
+    API -> DB : transakcija: Confirmed ili Rejected + outbox\n(pri potvrdi kreiraj Pending servis)
+    API --> Manager : 200 nakon uspješnog commita
+else predložen drugi termin
+    API -> DB : transakcija: proposal Pending + AwaitingOwner + outbox
+    API --> Manager : 201 nakon uspješnog commita
+    Owner -> API : POST /api/bookings/{id}/appointment-proposals/{proposalId}/decision
+    API -> API : provjeri vlasnika i aktualni Pending prijedlog
+    alt prihvaćeno
+        API -> DB : transakcija: Accepted, Confirmed, termin, Pending servis + outbox
+    else odbijeno
+        API -> DB : transakcija: Rejected, Cancelled + outbox
+        note right of Owner : Za drugi termin vlasnik šalje novu rezervaciju.
+    end
+
+    API --> Owner : 200 nakon uspješnog commita; inače 4xx / 5xx
+end
+
+' ==============================================================================
+' Faza 3: dostava obavijesti nakon poslovne promjene
+' ==============================================================================
+
+' Radnik obrađuje trajno spremljene obavijesti neovisno o odgovoru korisniku.
+Worker -> DB : pročitaj neposlane obavijesti
+Worker -> Mail : pošalji odluku / prijedlog vlasniku
+alt usluga prihvati slanje
+    Mail --> Worker : identifikator poruke
+    Worker -> DB : označi slanje prihvaćenim
+else slanje neuspješno
+    Worker -> DB : zabilježi pogrešku i ponovi kasnije
+end
+
+' ==============================================================================
+' Transakcije, konflikti i ograničenja dostave
+' ==============================================================================
+
+note over API, DB
+    Sve mutacije su atomske; greška pohrane vraća 5xx bez uspjeha.
+    Provjera konflikta termina i verzije.
+end note
+
+note over Worker, Mail
+    Prihvaćanje slanja nije dokaz dostave u sandučić.
+end note
+
+@enduml

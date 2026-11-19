@@ -1,0 +1,196 @@
+' ==============================================================================
+' 6-1-zg-customs-DD.puml
+'
+' Svrha:    Prikazuje javni razmještaj ZG Customs na jednoj Azure virtualnoj
+'           mašini: izvršna okruženja, aplikacijske artefakte, trajnu pohranu
+'           i komunikacijske putove. Operativni dio prikazuje administraciju
+'           i postavljanje inačica nakon uspješnog CI-ja.
+' Izvori:   docs/6-Postavljanje-instalacija-i-konfiguracija.md;
+'           docs/deployment.md; compose.yaml; frontend/Caddyfile;
+'           frontend/Dockerfile; backend/Dockerfile.
+' Status:   Dokumentirana početna inačica, provjerena u poglavlju 6 na datum
+'           27. 10. 2026.; dijagram nije nova provjera stanja javnog servera.
+' Praćenje: Portove, konfiguraciju i artefakte uskladiti pri promjeni topologije.
+'
+' Diagram level: Physical Deployment Architecture
+' Diagram type:  Deployment Diagram
+' ==============================================================================
+
+@startuml
+title ZG Customs - razmještaj na Azure virtualnoj mašini
+
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+skinparam ArrowColor #212529
+
+skinparam node {
+    BackgroundColor #FFFFFF
+    BorderColor #212529
+}
+
+skinparam cloud {
+    BackgroundColor #F8F9FA
+    BorderColor #212529
+}
+
+skinparam artifact {
+    BackgroundColor #E7F1FF
+    BorderColor #0D6EFD
+}
+
+skinparam database {
+    BackgroundColor #FFF3CD
+    BorderColor #212529
+}
+
+skinparam note {
+    BackgroundColor #F8F9FA
+    BorderColor #212529
+    FontColor #212529
+}
+
+' ==============================================================================
+' Klijentski uređaji i vanjska infrastruktura
+' ==============================================================================
+
+node "Korisnički uređaj" as Device <<device>> {
+    node "Web-preglednik" as Browser <<executionEnvironment>>
+}
+
+node "Računalo održavatelja" as AdminDevice <<device>> {
+    node "SSH klijent / klijent baze" as AdminClient <<executionEnvironment>>
+}
+
+cloud "GitHub" as GitHub {
+    artifact "Repozitorij ZG-Customs\nmain / Git SHA" as Repository
+    node "GitHub Actions\nCI provjere" as CI <<executionEnvironment>>
+}
+
+' DuckDNS osigurava domensko ime; nije posrednik HTTP prometa aplikacije.
+note top of Device
+    Javna adresa: https://zgcustoms.duckdns.org
+    DuckDNS povezuje naziv domene s javnom IP adresom VM-a.
+end note
+
+' ==============================================================================
+' Poslužitelj, izvršna okruženja i razmješteni artefakti
+' ==============================================================================
+
+cloud "Microsoft Azure" as Azure {
+    node "Virtualna mašina\nUbuntu 24.04 LTS / približno 4 GB RAM-a" as VM <<virtual machine>> {
+
+        node "Docker Engine / Compose\nmreža app" as Docker <<executionEnvironment>> {
+            node "web\nCaddy 2" as Web <<container>> {
+                artifact "React / TypeScript build\nfrontend/dist -> /srv" as Frontend
+                artifact "Caddyfile" as CaddyConfig
+            }
+
+            node "backend\nJava 21 / Spring Boot 4.1.2" as Backend <<container>> {
+                artifact "Spring Boot aplikacija\n/app/app.jar" as Application
+                artifact "Flyway SQL migracije\n(u aplikacijskom paketu)" as Migrations
+            }
+
+            database "postgres\nPostgreSQL 18.6\nbaza zg_customs" as DB <<container>>
+        }
+
+        node "Trajna pohrana na istom VM-u" as Storage {
+            artifact "postgres_data\npodaci baze" as DBData <<Docker volume>>
+            artifact "caddy_data / caddy_config\nTLS i Caddy podaci" as TLSData <<Docker volumes>>
+            artifact "backups/\nkopije baze" as Backups
+        }
+
+        node "Operativno okruženje domaćina" as Operations <<executionEnvironment>> {
+            artifact "cron / bin/sync.py\nbin/deploy.sh / bin/backup.sh" as Automation
+            artifact "Privatna .env\nizvan repozitorija" as Environment
+        }
+    }
+}
+
+' ==============================================================================
+' Konfiguracija i inicijalizacija
+' ==============================================================================
+
+note right of Web
+    Produkcija: SITE_ADDRESS=zgcustoms.duckdns.org
+    WEB_BIND=0.0.0.0; web portovi 80/443.
+    Frontend koristi relativni /api na istom ishodištu.
+    Caddy javno odbija /actuator i /actuator/*.
+    Node.js 24 koristi se pri izgradnji, ne za posluživanje.
+end note
+
+note right of Backend
+    DB_URL=jdbc:postgresql://postgres:5432/zg_customs
+    DB_USER=zg_customs; DB_PASSWORD iz privatne konfiguracije.
+    Flyway primjenjuje nove migracije pri pokretanju;
+    Hibernate provjerava postojeću shemu.
+end note
+
+note bottom of DB
+    Pri prvom pokretanju praznog volumea init-app-user.sh
+    stvara aplikacijski račun bez superuser ovlasti.
+    POSTGRES_PASSWORD i DB_PASSWORD ostaju privatni.
+    Promjena .env ne mijenja lozinke već inicijalizirane baze.
+end note
+
+' ==============================================================================
+' Javni promet i komunikacija unutar Docker mreže
+' ==============================================================================
+
+Browser -[#blue]-> Web : HTTPS : 443\nstatičke datoteke i /api/*
+Browser -[#blue,dashed]-> Web : HTTP : 80\npreusmjeravanje na HTTPS
+Web -[#green,bold]-> Backend : HTTP : 8080\nreverse proxy /api/* -> backend:8080
+Backend -[#green,bold]-> DB : JDBC / TCP : 5432\npostgres:5432
+
+' Volumeni su lokalna pohrana, a ne dodatni mrežni poslužitelji.
+DB --> DBData : /var/lib/postgresql
+Web --> TLSData : /data i /config
+
+' ==============================================================================
+' Administrativni pristup i ograničenja objavljenih portova
+' ==============================================================================
+
+AdminClient -[#darkorange]-> VM : SSH : 22\nosobni Linux račun i ključ
+
+note left of VM
+    Host 127.0.0.1:8080 -> backend:8080
+    Host 127.0.0.1:5432 -> postgres:5432
+    Izravni backend i baza nisu objavljeni na javnoj adresi.
+    Održavatelj im pristupa kroz SSH tunel.
+    SSH pristup ne dodjeljuje automatski ovlasti u bazi.
+end note
+
+' ==============================================================================
+' Izgradnja, postavljanje i sigurnosne kopije
+' ==============================================================================
+
+CI ..> Repository : provjera točnog commita
+Automation -[#darkorange]-> GitHub : HTTPS : 443\ndohvat koda i provjera rezultata CI-ja
+Automation ..> Docker : lokalna izgradnja i Compose postavljanje\nAPP_VERSION = puni Git SHA
+Automation ..> Environment : čitanje konfiguracije
+Automation ..> DB : backup.sh / pg_dump\nprije nadogradnje i dnevno
+Automation --> Backups : zapis kopije na disk VM-a
+
+note bottom of Operations
+    sync.py provjerava main svakih pet minuta.
+    Postavlja se samo commit s uspješnim CI-jem.
+    deploy.sh provjerava spremnost prije zapisa state/current-sha.
+    Imageovi nastaju na VM-u; GitHub ne pokreće ulazni SSH deploy.
+    Instalirane bin/ skripte održavatelj ažurira zasebno.
+end note
+
+note bottom of Backups
+    Dnevna kopija: 03:30 UTC prema dokumentiranom postavljanju.
+    Kopije su na istom serveru; vanjska pohrana i zadržavanje
+    još nisu uspostavljeni. Automatski rollback migracija nije implementiran.
+end note
+
+legend bottom
+    Plavo: javni web promet. Zeleno: promet u Docker mreži.
+    Narančasto: administracija i vanjska komunikacija automatizacije.
+    Točkaste ovisnosti opisuju provjere i upravljanje, ne dodatne javne portove.
+    Početna inačica prikazuje katalog usluga iz baze.
+    OAuth, Resend i Stripe nisu povezani u dokumentiranoj inačici.
+endlegend
+
+@enduml

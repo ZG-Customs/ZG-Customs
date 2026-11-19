@@ -267,3 +267,24 @@ summary:focus-visible {
     transition-duration: 0.01ms !important;
   }
 }
+
+.account form {
+  display: grid;
+  gap: 0.75rem;
+  margin-block: 1rem;
+}
+
+.account label {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.account input,
+.account select,
+.account button {
+  font: inherit;
+}
+
+.account li button {
+  margin-inline-start: 0.5rem;
+}
