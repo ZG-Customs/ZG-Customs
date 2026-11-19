@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import type { FormEvent, ReactNode } from "react";
+import { AccountPanel } from "./AccountPanel";
 
 export type Account = {
   id: number;
@@ -83,10 +84,9 @@ export type WorkshopAccountState = {
   submit: (path: string, data?: object, method?: string) => Promise<void>;
 };
 
-export function WorkshopAccount({ role, children, adminPanel }: {
+export function WorkshopAccount({ role, children }: {
   role: LoginRole;
   children?: (state: WorkshopAccountState) => ReactNode;
-  adminPanel?: ReactNode;
 }) {
   const [returnedFromWorkshopLogin] = useState(() => {
     const intent = getWorkshopLogin();
@@ -106,7 +106,7 @@ export function WorkshopAccount({ role, children, adminPanel }: {
     ]);
     setEnabled(provider.enabled);
     let current = identity;
-    if (returnedFromWorkshopLogin && current?.status === 'UNREGISTERED' &&
+    if (role !== 'OWNER' && returnedFromWorkshopLogin && current?.status === 'UNREGISTERED' &&
         current.contactEmail?.trim()) {
       automaticRegistration.current ??= registerAccount(role, current);
       try {
@@ -151,7 +151,9 @@ export function WorkshopAccount({ role, children, adminPanel }: {
   }
 
   if (loading) return <p role="status">Učitavanje računa…</p>;
-  if (role === 'OWNER' && account?.role === 'ADMIN' && adminPanel) return adminPanel;
+  if (role === 'OWNER' && account?.role === 'ADMIN') {
+    return <AccountPanel onSignedOut={() => setAccount(null)} />;
+  }
   const pageAccount = account?.role === role ? account : null;
   const needsContact = (returnedFromWorkshopLogin || role === 'OWNER') && account?.status === 'UNREGISTERED';
 
@@ -169,14 +171,14 @@ export function WorkshopAccount({ role, children, adminPanel }: {
       {new URLSearchParams(window.location.search).get('login') === 'failed'
         && <p role="alert">Prijava nije uspjela. Provjerite koristite li račun za ovu stranicu.</p>}
       {account?.role && !pageAccount && <p>Za ovu stranicu prijavite se računom odgovarajuće uloge.</p>}
-      {(pageAccount || needsContact) && <button type="button" disabled={busy} onClick={() => {
+      {account && <button type="button" disabled={busy} onClick={() => {
         sessionStorage.removeItem(LOGIN_INTENT);
         void submit('/api/auth/logout');
       }}>Odjava</button>}
       {needsContact && (
-        <form onSubmit={onRegister}>
-          <p>Unesite kontakt za dovršetak registracije računa.</p>
-          <label>Kontakt <input name="contact" required maxLength={300} /></label>
+        <form key={account.id} onSubmit={onRegister}>
+          <p>Za dovršetak registracije provjerite ili unesite kontakt.</p>
+          <label>Kontakt <input name="contact" defaultValue={account.contactEmail?.trim() ?? ''} required maxLength={300} /></label>
           <button disabled={busy}>Registriraj se</button>
         </form>
       )}

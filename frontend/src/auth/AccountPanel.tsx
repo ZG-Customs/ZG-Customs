@@ -35,7 +35,7 @@ async function loadAccount() {
   }
 }
 
-export function AccountPanel() {
+export function AccountPanel({ onSignedOut }: { onSignedOut: () => void }) {
   const [account, setAccount] = useState<Account | null>(null);
   const [enabled, setEnabled] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -51,6 +51,10 @@ export function AccountPanel() {
     ]);
     setEnabled(provider.enabled);
     setAccount(current);
+    if (!current) {
+      onSignedOut();
+      return;
+    }
     const admin = current?.status === 'ACTIVE' && current.role === 'ADMIN';
     const workshopPath = current?.status === 'ACTIVE' && current.role === 'MANAGER' && current.workshopId !== null
       ? `/api/workshops/${current.workshopId}` : '';

@@ -1,4 +1,3 @@
-import { AccountPanel } from "./auth/AccountPanel";
 import { WorkshopAccount } from "./auth/WorkshopAccount";
 
 export default function OwnerLandingPage() {
@@ -10,7 +9,7 @@ export default function OwnerLandingPage() {
         </div>
       </header>
 
-      <WorkshopAccount role="OWNER" adminPanel={<AccountPanel />} />
+      <WorkshopAccount role="OWNER" />
 
       <p className="catalog"><a href="/">← Povratak na početnu</a></p>
     </section>
