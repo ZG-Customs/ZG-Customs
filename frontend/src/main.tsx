@@ -1,6 +1,9 @@
 import { StrictMode, useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
+import MechanicLandingPage from "./MechanicLandingPage";
+import ManagerLandingPage from "./ManagerLandingPage";
 import { AccountPanel } from "./auth/AccountPanel";
+import { getWorkshopLogin, LOGIN_INTENT, workshopPages } from "./auth/WorkshopAccount";
 import "./style.css";
 
 type ServiceType = {
@@ -10,7 +13,25 @@ type ServiceType = {
   description: string;
 };
 
-const loginPaths = new Set(["/login/user", "/login/mechanic", "/login/manager"]);
+function resumeWorkshopLogin() {
+  if (window.location.pathname !== '/') return false;
+  const intent = getWorkshopLogin();
+  if (!intent || intent.stage !== 'sign-in') return false;
+
+  try {
+    const path = intent.role === 'MANAGER' ? workshopPages.MANAGER : workshopPages.MECHANIC;
+    const failed = new URLSearchParams(window.location.search).get('login') === 'failed';
+    if (failed) {
+      sessionStorage.removeItem(LOGIN_INTENT);
+    } else {
+      sessionStorage.setItem(LOGIN_INTENT, JSON.stringify({ ...intent, stage: 'registration' }));
+    }
+    window.location.replace(path + (failed ? '?login=failed' : ''));
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 function App() {
   const path = window.location.pathname.replace(/\/+$/, "") || "/";
@@ -32,13 +53,17 @@ function App() {
 
         <nav className="site-nav" aria-label="Glavna navigacija">
           <a href="/about">O nama</a>
-          <a href="/login/mechanic">Prijava za mehaničare</a>
-          <a href="/login/manager">Prijava za menadžere</a>
+          <a href="/login/mechanic">Mehaničari</a>
+          <a href="/login/manager">Vlasnici autoservisa</a>
         </nav>
       </header>
 
       <main className="page-content">
-        {loginPaths.has(path) ? (
+        {path === workshopPages.MECHANIC ? (
+          <MechanicLandingPage />
+        ) : path === workshopPages.MANAGER ? (
+          <ManagerLandingPage />
+        ) : path === "/login/user" ? (
           <>
             <h1>Korisnički račun</h1>
             <AccountPanel />
@@ -111,7 +136,6 @@ function LandingPage() {
     <>
       <section className="hero" aria-labelledby="hero-title">
         <div className="hero-copy">
-          <p className="eyebrow">ZG CUSTOMS</p>
           <h1 id="hero-title">ZG Customs</h1>
           <p className="hero-description">
             Dogovorite servis, pratite radove i čuvajte povijest radova svog
@@ -122,8 +146,6 @@ function LandingPage() {
           </a>
         </div>
       </section>
-
-      <AccountPanel />
 
       <details className="catalog">
         <summary>
@@ -156,8 +178,10 @@ function LandingPage() {
   );
 }
 
-createRoot(document.getElementById("root")!).render(
-  <StrictMode>
-    <App />
-  </StrictMode>,
-);
+if (!resumeWorkshopLogin()) {
+  createRoot(document.getElementById("root")!).render(
+    <StrictMode>
+      <App />
+    </StrictMode>,
+  );
+}
