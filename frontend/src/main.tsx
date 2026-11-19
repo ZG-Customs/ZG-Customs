@@ -2,7 +2,7 @@ import { StrictMode, useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 import MechanicLandingPage from "./MechanicLandingPage";
 import ManagerLandingPage from "./ManagerLandingPage";
-import { AccountPanel } from "./auth/AccountPanel";
+import OwnerLandingPage from "./OwnerLandingPage";
 import { getWorkshopLogin, LOGIN_INTENT, workshopPages } from "./auth/WorkshopAccount";
 import "./style.css";
 
@@ -19,7 +19,7 @@ function resumeWorkshopLogin() {
   if (!intent || intent.stage !== 'sign-in') return false;
 
   try {
-    const path = intent.role === 'MANAGER' ? workshopPages.MANAGER : workshopPages.MECHANIC;
+    const path = workshopPages[intent.role];
     const failed = new URLSearchParams(window.location.search).get('login') === 'failed';
     if (failed) {
       sessionStorage.removeItem(LOGIN_INTENT);
@@ -63,11 +63,8 @@ function App() {
           <MechanicLandingPage />
         ) : path === workshopPages.MANAGER ? (
           <ManagerLandingPage />
-        ) : path === "/login/user" ? (
-          <>
-            <h1>Korisnički račun</h1>
-            <AccountPanel />
-          </>
+        ) : path === workshopPages.OWNER ? (
+          <OwnerLandingPage />
         ) : (
           <LandingPage />
         )}
@@ -142,7 +139,7 @@ function LandingPage() {
             vozila.
           </p>
           <a className="primary-button" href="/login/user">
-            Prijava za korisnike <span aria-hidden="true">↗</span>
+            Prijava za vlasnike vozila <span aria-hidden="true">↗</span>
           </a>
         </div>
       </section>

@@ -35,31 +35,32 @@ export async function loadAccount() {
   }
 }
 
-type WorkshopRole = 'MANAGER' | 'MECHANIC';
+type LoginRole = 'OWNER' | 'MANAGER' | 'MECHANIC';
 
 export const LOGIN_INTENT = 'zg-customs:workshop-login';
 const LOGIN_TIMEOUT = 15 * 60 * 1000;
 const LOGIN_URL = '/api/auth/login/external';
 
 export const workshopPages = {
+  OWNER: '/login/user',
   MANAGER: '/login/manager',
   MECHANIC: '/login/mechanic',
 } as const;
 
-function beginWorkshopLogin(role: WorkshopRole) {
+function beginLogin(role: LoginRole) {
   sessionStorage.setItem(LOGIN_INTENT, JSON.stringify({
     role, expiresAt: Date.now() + LOGIN_TIMEOUT, stage: 'sign-in',
   }));
 }
 
 export function getWorkshopLogin(): {
-  role: WorkshopRole;
+  role: LoginRole;
   expiresAt: number;
   stage: 'sign-in' | 'registration';
 } | null {
   try {
     const intent = JSON.parse(sessionStorage.getItem(LOGIN_INTENT) ?? 'null');
-    if ((intent?.role === 'MANAGER' || intent?.role === 'MECHANIC') &&
+    if ((intent?.role === 'OWNER' || intent?.role === 'MANAGER' || intent?.role === 'MECHANIC') &&
         (intent.stage === 'sign-in' || intent.stage === 'registration') &&
         typeof intent.expiresAt === 'number' && intent.expiresAt > Date.now()) {
       return intent;
@@ -70,7 +71,7 @@ export function getWorkshopLogin(): {
   return null;
 }
 
-async function registerWorkshopAccount(role: WorkshopRole, identity: Account) {
+async function registerAccount(role: LoginRole, identity: Account) {
   await write('/api/auth/register', { role, contact: identity.contactEmail?.trim() });
   return loadAccount();
 }
@@ -82,9 +83,10 @@ export type WorkshopAccountState = {
   submit: (path: string, data?: object, method?: string) => Promise<void>;
 };
 
-export function WorkshopAccount({ role, children }: {
-  role: WorkshopRole;
-  children: (state: WorkshopAccountState) => ReactNode;
+export function WorkshopAccount({ role, children, adminPanel }: {
+  role: LoginRole;
+  children?: (state: WorkshopAccountState) => ReactNode;
+  adminPanel?: ReactNode;
 }) {
   const [returnedFromWorkshopLogin] = useState(() => {
     const intent = getWorkshopLogin();
@@ -106,7 +108,7 @@ export function WorkshopAccount({ role, children }: {
     let current = identity;
     if (returnedFromWorkshopLogin && current?.status === 'UNREGISTERED' &&
         current.contactEmail?.trim()) {
-      automaticRegistration.current ??= registerWorkshopAccount(role, current);
+      automaticRegistration.current ??= registerAccount(role, current);
       try {
         current = await automaticRegistration.current;
         sessionStorage.removeItem(LOGIN_INTENT);
@@ -149,8 +151,9 @@ export function WorkshopAccount({ role, children }: {
   }
 
   if (loading) return <p role="status">Učitavanje računa…</p>;
+  if (role === 'OWNER' && account?.role === 'ADMIN' && adminPanel) return adminPanel;
   const pageAccount = account?.role === role ? account : null;
-  const needsContact = returnedFromWorkshopLogin && account?.status === 'UNREGISTERED';
+  const needsContact = (returnedFromWorkshopLogin || role === 'OWNER') && account?.status === 'UNREGISTERED';
 
   return (
     <section className="catalog account">
@@ -158,7 +161,7 @@ export function WorkshopAccount({ role, children }: {
       {!pageAccount && !needsContact && enabled && (
         <a className="primary-button" href={LOGIN_URL} onClick={(event) => {
           event.preventDefault();
-          beginWorkshopLogin(role);
+          beginLogin(role);
           window.location.assign(LOGIN_URL);
         }}>Prijava</a>
       )}
@@ -178,7 +181,7 @@ export function WorkshopAccount({ role, children }: {
         </form>
       )}
       {pageAccount?.status === 'ACTIVE' && <p>Račun je aktivan.</p>}
-      {pageAccount && children({ account: pageAccount, busy, revision, submit })}
+      {pageAccount && children?.({ account: pageAccount, busy, revision, submit })}
     </section>
   );
 }
