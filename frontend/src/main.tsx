@@ -1,7 +1,7 @@
-import { StrictMode, useEffect, useState } from 'react';
-import { createRoot } from 'react-dom/client';
-import { AccountPanel } from './auth/AccountPanel';
-import './style.css';
+import { StrictMode, useEffect, useState } from "react";
+import { createRoot } from "react-dom/client";
+import { AccountPanel } from "./auth/AccountPanel";
+import "./style.css";
 
 type ServiceType = {
   id: number;
@@ -10,9 +10,52 @@ type ServiceType = {
   description: string;
 };
 
+const loginPaths = new Set(["/login/user", "/login/mechanic", "/login/manager"]);
+
 function App() {
+  const path = window.location.pathname.replace(/\/+$/, "") || "/";
+  if (path === "/about") {
+    return <div className="blank-page" />;
+  }
+
+  return (
+    <div className="site-shell">
+      <header className="site-header">
+        <a
+          className="brand"
+          href="/"
+          aria-label="ZG Customs — početna stranica"
+        >
+          <span className="brand-mark">ZG</span>
+          <span className="brand-name">CUSTOMS</span>
+        </a>
+
+        <nav className="site-nav" aria-label="Glavna navigacija">
+          <a href="/about">O nama</a>
+          <a href="/login/mechanic">Prijava za mehaničare</a>
+          <a href="/login/manager">Prijava za menadžere</a>
+        </nav>
+      </header>
+
+      <main className="page-content">
+        {loginPaths.has(path) ? (
+          <>
+            <h1>Korisnički račun</h1>
+            <AccountPanel />
+          </>
+        ) : (
+          <LandingPage />
+        )}
+      </main>
+
+      <footer className="checkerboard" aria-hidden="true" />
+    </div>
+  );
+}
+
+function LandingPage() {
   const [services, setServices] = useState<ServiceType[]>([]);
-  const [state, setState] = useState<'loading' | 'ready' | 'error'>('loading');
+  const [state, setState] = useState<"loading" | "ready" | "error">("loading");
 
   useEffect(() => {
     const controller = new AbortController();
@@ -21,11 +64,11 @@ function App() {
 
     async function loadServices() {
       try {
-        const response = await fetch('/api/service-types', {
+        const response = await fetch("/api/service-types", {
           signal: controller.signal,
         });
         if (!response.ok) {
-          throw new Error('Service catalog unavailable');
+          throw new Error("Service catalog unavailable");
         }
 
         const data: unknown = await response.json();
@@ -33,22 +76,22 @@ function App() {
           !Array.isArray(data) ||
           !data.every(
             (item) =>
-              typeof item?.id === 'number' &&
-              typeof item?.code === 'string' &&
-              typeof item?.name === 'string' &&
-              typeof item?.description === 'string'
+              typeof item?.id === "number" &&
+              typeof item?.code === "string" &&
+              typeof item?.name === "string" &&
+              typeof item?.description === "string",
           )
         ) {
-          throw new Error('Invalid service catalog');
+          throw new Error("Invalid service catalog");
         }
 
         if (active) {
           setServices(data);
-          setState('ready');
+          setState("ready");
         }
       } catch {
         if (active) {
-          setState('error');
+          setState("error");
         }
       } finally {
         window.clearTimeout(timeout);
@@ -65,24 +108,39 @@ function App() {
   }, []);
 
   return (
-    <main>
-      <header className="intro">
-        <h1>ZG <span>-</span> Customs</h1>
-        <p>Uskoro!</p>
-      </header>
+    <>
+      <section className="hero" aria-labelledby="hero-title">
+        <div className="hero-copy">
+          <p className="eyebrow">ZG CUSTOMS</p>
+          <h1 id="hero-title">ZG Customs</h1>
+          <p className="hero-description">
+            Dogovorite servis, pratite radove i čuvajte povijest radova svog
+            vozila.
+          </p>
+          <a className="primary-button" href="/login/user">
+            Prijava za korisnike <span aria-hidden="true">↗</span>
+          </a>
+        </div>
+      </section>
 
       <AccountPanel />
+
       <details className="catalog">
-        <summary>Vrste servisa</summary>
+        <summary>
+          Vrste servisa <span aria-hidden="true">＋</span>
+        </summary>
         <div role="status" aria-live="polite">
-          {state === 'loading' && <p>Učitavanje podataka…</p>}
-          {state === 'error' && (
-            <p>Podatke trenutačno nije moguće učitati. Pokušajte osvježiti stranicu.</p>
+          {state === "loading" && <p>Učitavanje podataka…</p>}
+          {state === "error" && (
+            <p>
+              Podatke trenutačno nije moguće učitati. Pokušajte osvježiti
+              stranicu.
+            </p>
           )}
         </div>
 
-        {state === 'ready' && (
-          services.length > 0 ? (
+        {state === "ready" &&
+          (services.length > 0 ? (
             <ul>
               {services.map((service) => (
                 <li key={service.id}>
@@ -92,15 +150,14 @@ function App() {
             </ul>
           ) : (
             <p>Još nema dodanih vrsta servisa.</p>
-          )
-        )}
+          ))}
       </details>
-    </main>
+    </>
   );
 }
 
-createRoot(document.getElementById('root')!).render(
+createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <App />
-  </StrictMode>
+  </StrictMode>,
 );
