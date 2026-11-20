@@ -164,6 +164,8 @@ Mechanic -- UC_JoinWorkshop
 Mechanic -- UC_Service
 Mechanic -- UC_Offer
 
+UC_Offer .left.> UC_Service : <<extend>>\n[potrebni dodatni radovi]
+
 ' Obrada servisa obuhvaća status, komentare, radove, dijelove, utrošeno vrijeme
 ' i završni trošak. Ponuda i odluka ostaju odvojeni ciljevi različitih aktera;
 ' odbijanje ponude ne znači automatski otkazivanje cijelog servisa.
