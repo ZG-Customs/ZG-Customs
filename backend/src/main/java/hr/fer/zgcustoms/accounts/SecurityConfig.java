@@ -22,6 +22,9 @@ class SecurityConfig {
                 .requestMatchers("/api/service-types", "/actuator/health/**", "/error").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/auth/login/**", "/api/auth/callback/**",
                         "/api/auth/csrf", "/api/auth/provider").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/vehicles").authenticated()
+                .requestMatchers(HttpMethod.POST, "/api/vehicles").authenticated()
+                .requestMatchers(HttpMethod.DELETE, "/api/vehicles/*").authenticated()
                 .requestMatchers("/api/auth/**", "/api/onboarding/mine", "/api/me",
                         "/api/workshop-applications", "/api/workshops", "/api/workshops/*/membership-requests",
                         "/api/workshops/*/mechanics", "/api/workshops/*/memberships/*",
