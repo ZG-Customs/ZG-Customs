@@ -141,9 +141,11 @@ Kod trećih strana, slike, ikone i drugi uključeni sadržaji zadržavaju vlasti
 
 Pri radu na projektu primjenjuju se FER-ova [pravila o primjerenoj uporabi umjetne inteligencije](https://www.fer.unizg.hr/_download/repository/Policy%20on%20the%20appropriate%20use%20of%20artificial%20intelligence%20at%20the%20faculty%20of%20electrical%20engineering%20and%20computing%5B1%5D.pdf).
 
-**Dosadašnja uporaba:** OpenAI Codex korišten je kao pomoć pri razradi početnog plana, izradi README-a te pripremi početne React stranice, Spring Boot backenda, migracije baze, testova, Docker/Caddy konfiguracije i skripti za Azure postavljanje. Tim treba pregledati kod i rezultate provjera prije prihvaćanja promjena.
+**Dosadašnja uporaba:** OpenAI Codex korišten je kao pomoć pri razradi početnog plana, izradi README-a te pripremi početne React stranice, Spring Boot backenda, migracije baze, testova, Docker/Caddy konfiguracije i skripti za Azure postavljanje.
 
-**Pregled tima:** **[DOPUNITI: tko je pregledao tekst, koje je provjere proveo i koje je izmjene unio]**. Tim prije objave treba provjeriti točnost opisa i usklađenost sa stvarnim stanjem projekta. Daljnja uporaba alata i provjera rezultata bilježit će se u [projektnoj dokumentaciji](docs/Home.md#izjava-o-uporabi-umjetne-inteligencije).
+Svaki član tima osobno pregledava sav kod koji je uz pomoć AI-ja napisao ili izmijenio u dijelu projekta na kojem radi. Prije prihvaćanja promjene pregledava i rezultate provjera. Najviše takvih pregleda obavljaju voditelj tima Rino Bago te Ivan Bartol.
+
+Tim prije objave treba provjeriti točnost opisa i usklađenost sa stvarnim stanjem projekta. Daljnja uporaba alata i provjera rezultata bilježit će se u [projektnoj dokumentaciji](docs/Home.md#izjava-o-uporabi-umjetne-inteligencije).
 
 <a id="code-of-conduct-and-support"></a>
 

@@ -151,7 +151,9 @@ Pričekajte da `pg_isready` u testnom containeru potvrdi spremnost prije testova
 
 ## Preostalo za javnu aplikaciju
 
-Sljedeći koraci su OIDC prijava i autorizacija, poslovne funkcionalnosti i njihovo korisničko sučelje, vanjske integracije te kopije izvan servera. Trenutačni javni API daje samo vrste servisa, bez korisničkih podataka i operacija pisanja. Management endpointi ostaju dostupni samo lokalno/SSH tunelom. Ovo postavljanje samo po sebi ne ispunjava sve zahtjeve prvog ciklusa projekta.
+Za uključivanje vanjske prijave na poslužitelju postavite OIDC varijable u privatnom `.env` koji učitava deployment skripta. Za `OIDC_PUBLIC_URL` koristite javni HTTPS URL aplikacije i registrirajte pripadajuću callback adresu kod pružatelja. Javni katalog vrsta servisa radi i bez OIDC profila. [Upute za OIDC](oidc.md)
+
+Management endpointi dostupni su lokalno ili preko SSH tunela. Sljedeći koraci uključuju ostale poslovne funkcionalnosti, vanjske integracije i kopije izvan servera.
 
 ## Provjera javnog postavljanja — 27. 10. 2026.
 

@@ -28,7 +28,7 @@ Oznake identificiraju specifikacije provjera, ne rezultate novog izvođenja. Jav
 
 ### Planirane provjere poslovnih tijekova
 
-Sljedeći slučajevi nisu izvedeni; zahtijevaju implementaciju pripadajućih funkcionalnosti iz [poglavlja 3](3-Obrasci-uporabe.md).
+Za AS04-01 integracijska klasa `AccountAccessIntegrationTests` na PostgreSQL-u provjerava ponovljeno mapiranje OIDC identiteta, odbijeni callback, CSRF, javnu registraciju, odobrenja i granice pristupa. Uspješna prijava kod stvarnog pružatelja provjerava se ručno u PT-01 prema [uputama za OIDC](oidc.md). Tablica opisuje očekivane ishode poslovnih tijekova iz [poglavlja 3](3-Obrasci-uporabe.md).
 
 | ID | Postupak i ulaz | Očekivani rezultat |
 | --- | --- | --- |
