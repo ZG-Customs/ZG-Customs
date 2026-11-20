@@ -1,6 +1,6 @@
 # Frontend i javna domena
 
-Početni frontend koristi React, TypeScript i Vite. Prikazuje naslovnu stranicu ZG Customs te vrste servisa dohvaćene iz Spring Boot API-ja. Naručivanje, korisnički profili i prijava još nisu implementirani.
+Početni frontend koristi React, TypeScript i Vite. Prikazuje naslovnu stranicu ZG Customs te vrste servisa dohvaćene iz Spring Boot API-ja. Sučelje vodi korisnike kroz vanjsku prijavu i radnje njihove uloge. Vlasnik može dodati, pregledati i arhivirati vozila. Naručivanje termina je planirano.
 
 ## Lokalni razvoj
 
@@ -64,6 +64,6 @@ docker compose --project-name zg-customs --env-file "$root/.env" \
 
 To je administracijska promjena konfiguracije. Za promjene React koda koristi se uobičajeni PR i objava iz `main`.
 
-DuckDNS token nije potreban za ovo postavljanje i ne pohranjuje se u repozitorij. Ako se javna IP adresa servera promijeni, treba ažurirati A zapis. Javni HTTPS, dohvat četiriju vrsta servisa i blokiranje management endpointova provjereni su 27. 10. 2026.; detalji su u [zapisu provjere postavljanja](deployment.md#provjera-javnog-postavljanja--27-10-2026). CI provjerava izgrađene datoteke, API preko Caddyja i nedostupnost management endpointova na javnom web ulazu.
+DuckDNS token nije potreban za ovo postavljanje i ne pohranjuje se u repozitorij. Nakon promjene javne IP adrese treba ažurirati A zapis. [Javna provjera od 20. 11. 2026.](deployment.md#provjera-m1) potvrdila je dostupnost web-aplikacije, kataloga i uključenu vanjsku prijavu.
 
 Izvori: [Vite — lokalni razvoj](https://vite.dev/guide/), [Vite — izgradnja i objava](https://vite.dev/guide/static-deploy.html), [Caddy — automatski HTTPS](https://caddyserver.com/docs/quick-starts/https).

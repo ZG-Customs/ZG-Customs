@@ -1,6 +1,6 @@
 # 6. Postavljanje, instalacija i konfiguracija
 
-Ovo poglavlje opisuje stvarno postavljenu početnu inačicu sustava **ZG Customs**, provjerenu 20. 11. 2026. Javno je dostupna na [https://zgcustoms.duckdns.org](https://zgcustoms.duckdns.org). Frontend prikazuje četiri vrste servisa dohvaćene iz backenda i baze. Prijava korisnika i poslovne funkcionalnosti još nisu implementirane.
+Ovo poglavlje opisuje stvarno postavljenu početnu inačicu sustava **ZG Customs**, provjerenu 20. 11. 2026. Javno je dostupna na [https://zgcustoms.duckdns.org](https://zgcustoms.duckdns.org). Frontend prikazuje četiri vrste servisa dohvaćene iz backenda i baze. Javni API prijavljuje uključenu vanjsku prijavu. Za prijavljene korisnike M1 sadrži evidenciju vozila i postupke odobravanja prema ulozi.
 
 ## 6.1 Prikaz razmještaja
 
@@ -15,7 +15,7 @@ Sustav se izvodi na jednoj Azure virtualnoj mašini s Ubuntuom 24.04 LTS i pribl
 
 Na VM-u su portovi 8080 i 5432 vezani samo na `127.0.0.1`. Preglednik ne pristupa bazi izravno. Caddy javno blokira `/actuator` endpointove. Podaci baze i TLS certifikati ostaju u zasebnim Docker volumeima pri nadogradnji.
 
-Konfiguracija razmještaja nalazi se u [`compose.yaml`](../compose.yaml) i [`frontend/Caddyfile`](../frontend/Caddyfile). DuckDNS omogućuje naziv javne domene, a GitHub čuva izvorni kod i rezultate CI-ja. Planirane integracije prijave, Resenda i Stripea još nisu povezane s ovom inačicom.
+Konfiguracija razmještaja nalazi se u [`compose.yaml`](../compose.yaml) i [`frontend/Caddyfile`](../frontend/Caddyfile). DuckDNS omogućuje naziv javne domene, a GitHub čuva izvorni kod i rezultate CI-ja. Vanjska prijava koristi [OpenID Connect](oidc.md). Resend i Stripe planirani su za daljnji razvoj.
 
 ![Slika 6.1. Razmještaj sustava ZG Customs](./assets/diagrams/6-1-zg-customs-DD.svg)
 
@@ -50,7 +50,7 @@ Frontend poziva relativni `/api` na istom ishodištu. Nema zasebne varijable `VI
 
 Pri prvom pokretanju praznog PostgreSQL volumea [`init-app-user.sh`](../ops/postgres/init-app-user.sh) stvara aplikacijski račun bez superuser ovlasti. Backend zatim primjenjuje [Flyway migracije](../backend/src/main/resources/db/migration/). Početna migracija stvara tablicu vrsta servisa i četiri početna zapisa. Flyway evidentira primijenjene migracije; one se ne ponavljaju pri svakom pokretanju. Hibernate provjerava postojeću shemu.
 
-Nakon pokretanja cijelog sustava otvorite `http://localhost:8088` i provjerite prikaz četiriju vrsta servisa. `http://localhost:8080/actuator/health/readiness` treba vratiti stanje `UP`. Popis na stranici dohvaća se kroz Caddy i backend iz PostgreSQL-a, pa provjerava vezu svih triju dijelova. U ovoj inačici još nema poslovnih operacija unosa kroz sučelje.
+Nakon pokretanja cijelog sustava otvorite `http://localhost:8088` i provjerite prikaz četiriju vrsta servisa. `http://localhost:8080/actuator/health/readiness` treba vratiti stanje `UP`. Popis na stranici dohvaća se kroz Caddy i backend iz PostgreSQL-a, pa provjerava vezu svih triju dijelova. Uz konfiguriran OIDC može se demonstrirati unos, ponovni dohvat i arhiviranje vlastitog vozila.
 
 Za dijagnostiku koristite `docker compose ps` i `docker compose logs --tail=100 web backend postgres` iz korijena lokalne kopije. Postupak [testiranja backenda](deployment.md#testiranje-backenda) koristi zasebnu testnu bazu. Podatke zajedničke baze mijenjaju verzionirane migracije; ne briše se volume radi resetiranja ili promjene lozinke.
 
@@ -78,6 +78,6 @@ To je kontinuirano postavljanje nakon provjerenog mergea. Promjene samo u radnoj
 - Administrator prati `state/current-sha`, zapise u `logs/` i stanje containera prema [uputama za upravljanje](deployment.md#upravljanje-i-sigurnosne-kopije). Linux račun `ivanbartol` ne ovisi o GitHub korisničkom imenu.
 - Kopije baze nastaju prije nadogradnji i svakodnevno u 03:30 UTC. Čuvaju se **samo na istom serveru**; kopiranje izvan servera i politika zadržavanja još se trebaju uspostaviti.
 - Obnova kopije prethodno je provjerena u zasebnoj testnoj bazi. Operativni vodič opisuje provjeru oporavka; automatski povrat migracija baze nije implementiran. `docker compose down -v` ne koristi se na zajedničkom serveru jer briše podatke.
-- Administratorsko sučelje same aplikacije još nije implementirano. Linux administratorski račun nije korisnička uloga u aplikaciji.
+- Administrator aplikacije pregledava prijave autoservisa i odlučuje o njihovu odobrenju. Ta se uloga dodjeljuje odvojeno od Linux ovlasti.
 
-[Zapis provjere od 27. 10. 2026.](deployment.md#provjera-javnog-postavljanja--27-10-2026) navodi tada aktivnu inačicu, provjerene javne endpointove, stanje containera i kopija. Dokumentaciju treba usklađivati s daljnjom implementacijom.
+[Zapis provjere od 27. 10. 2026.](deployment.md#provjera-javnog-postavljanja--27-10-2026) navodi tada aktivnu inačicu, provjerene javne endpointove, stanje containera i kopija. [Zapis M1 od 20. 11. 2026.](deployment.md#provjera-m1) navodi novije javne provjere i rezultat CI-ja.

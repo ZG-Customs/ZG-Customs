@@ -1,0 +1,132 @@
+@startuml
+' Fizička shema nakon migracija V1__create_service_types.sql i V2__baza.sql.
+hide circle
+hide methods
+skinparam shadowing false
+skinparam linetype ortho
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 14
+skinparam classAttributeIconSize 0
+skinparam classFontStyle bold
+skinparam classBackgroundColor #F4F9F7
+skinparam classBorderColor #376963
+skinparam classHeaderBackgroundColor #DDEEE7
+skinparam ArrowColor #24524F
+skinparam nodesep 35
+skinparam ranksep 46
+
+entity users {
+  * id : bigint <<PK>>
+  --
+  * name : varchar(150)
+  * email : varchar(255)
+  * oidc_issuer : varchar(255)
+  * oidc_subject : varchar(255)
+  * status : varchar(16)
+  contact_details : text
+  specializations : text
+}
+
+entity roles {
+  * id : bigint <<PK>>
+  --
+  * code : varchar(40) <<UQ>>
+  * name : varchar(100)
+}
+
+entity user_roles {
+  * user_id : bigint <<PK, FK, UQ>>
+  * role_id : bigint <<PK, FK>>
+}
+
+entity workshop_applications {
+  * id : bigint <<PK>>
+  --
+  * applicant_id : bigint <<FK>>
+  * name : varchar(150)
+  * contact_details : text
+  * ownership_evidence : varchar(2000)
+  * status : varchar(16)
+  decided_at : timestamptz
+}
+
+entity workshops {
+  * id : bigint <<PK>>
+  --
+  * manager_id : bigint <<FK, UQ>>
+  * name : varchar(150)
+  application_id : bigint <<FK, UQ>>
+  contact_details : text
+  * status : varchar(16)
+}
+
+entity workshop_memberships {
+  * workshop_id : bigint <<PK, FK>>
+  * user_id : bigint <<PK, FK, UQ>>
+}
+
+entity membership_requests {
+  * id : bigint <<PK>>
+  --
+  * user_id : bigint <<FK>>
+  * workshop_id : bigint <<FK>>
+  * status : varchar(16)
+  * requested_at : timestamptz
+  ended_at : timestamptz
+}
+
+entity vehicles {
+  * id : bigint <<PK>>
+  --
+  * owner_id : bigint <<FK>>
+  * registration : varchar(32)
+  * make : varchar(100)
+  * model : varchar(100)
+  * production_year : integer
+  * mileage : integer
+  archived_at : timestamptz
+}
+
+entity service_types {
+  * id : bigint <<PK>>
+  --
+  * code : varchar(32) <<UQ>>
+  * name : varchar(100)
+  * description : varchar(500)
+}
+
+entity bookings {
+  * id : bigint <<PK>>
+  --
+  * vehicle_id : bigint <<FK>>
+  * workshop_id : bigint <<FK>>
+  * service_type_id : bigint <<FK>>
+  * requested_at : timestamptz
+  confirmed_at : timestamptz
+  * status : varchar(24)
+  * version : bigint
+}
+
+entity appointment_proposals {
+  * id : bigint <<PK>>
+  --
+  * booking_id : bigint <<FK>>
+  * proposed_at : timestamptz
+  * status : varchar(16)
+}
+
+users ||--o| user_roles
+roles ||--o{ user_roles
+users ||--o{ workshop_applications
+users ||--o| workshops
+workshop_applications |o--o| workshops
+users ||--o| workshop_memberships
+workshops ||--o{ workshop_memberships
+users ||--o{ membership_requests
+workshops ||--o{ membership_requests
+users ||--o{ vehicles
+vehicles ||--o{ bookings
+workshops ||--o{ bookings
+service_types ||--o{ bookings
+bookings ||--o{ appointment_proposals
+@enduml

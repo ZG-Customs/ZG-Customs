@@ -1,10 +1,10 @@
 # A. Pregled aktivnosti grupe
 
-Pregled organizacije rada, plana razvoja i ostvarenih doprinosa tima ZG Customs. Stanje zadataka provjereno je 16. 11. 2026.
+Pregled organizacije rada, plana razvoja i ostvarenih doprinosa tima ZG Customs. Stanje zadataka provjereno je 20. 11. 2026.
 
 ## A.1 Evidencija sastanaka
 
-**Kratice članova tima:** RB = Rino Bago; IB = Ivan Bartol; JJ = Jagor Jureković; PJ = Potjeh Jureković; MS = Marijan Smiljanić; JS = Juraj Sviličić.
+**Kratice članova tima:** RB = Rino Bago; IB = Ivan Bartol ([@ivanbartol](https://github.com/ivanbartol) i [@slanacexe](https://github.com/slanacexe), oba računa pripadaju istom članu); JJ = Jagor Jureković; PJ = Potjeh Jureković; MS = Marijan Smiljanić; JS = Juraj Sviličić.
 
 | Član | Uloga                                                                 |
 | ---- | --------------------------------------------------------------------- |
@@ -56,12 +56,13 @@ Pregled evidentiranih zatvorenih zadataka ažuriran je **20. 11. 2026.** i obuhv
 | AS01-01 – Reconcile requirements, permissions and workflow decisions; zatvoreno 9. 11. 2026.                       | RB         | 6                                     | [#34](https://github.com/ZG-Customs/ZG-Customs/issues/34); [analiza zahtjeva](2-Analiza-zahtjeva.md).                                                                                                                                                                                                                                                                                        |
 | AS01-02 – Document domain models and cross-role use cases; zatvoreno 9. 11. 2026.                                  | RB         | 10                                    | [#35](https://github.com/ZG-Customs/ZG-Customs/issues/35); [obrasci uporabe](3-Obrasci-uporabe.md), [arhitektura i oblikovanje](4-Arhitektura-i-oblikovanje.md), [PR #88](https://github.com/ZG-Customs/ZG-Customs/pull/88).                                                                                                                                                                 |
 | AS04-01 – Implement external identity, registration and access control; zatvoreno 16. 11. 2026.                    | JJ, PJ     | 12                                    | [#36](https://github.com/ZG-Customs/ZG-Customs/issues/36); vanjska prijava, povezivanje identiteta, registracija prema ulozi i poslužiteljska kontrola pristupa.                                                                                                                                                                                                                             |
-| AS07-01 – Implement vehicle records and safe removal; AS07-02 – Build My Vehicles screens; zatvoreno 20. 11. 2026. | RB         | 4                                     | [AS07-01 / #43](https://github.com/ZG-Customs/ZG-Customs/issues/43), [AS07-02 / #44](https://github.com/ZG-Customs/ZG-Customs/issues/44); evidencija vozila i sučelje za pregled, dodavanje, uređivanje i uklanjanje vozila u sklopu [AS07 / #11](https://github.com/ZG-Customs/ZG-Customs/issues/11).                                                                                       |
+| AS07-01 – Implement vehicle records and safe removal; AS07-02 – Build My Vehicles screens; zatvoreno 20. 11. 2026. | RB         | 4                                     | [AS07-01 / #43](https://github.com/ZG-Customs/ZG-Customs/issues/43), [AS07-02 / #44](https://github.com/ZG-Customs/ZG-Customs/issues/44); evidencija vozila i sučelje za pregled, dodavanje i arhiviranje vozila u sklopu [AS07 / #11](https://github.com/ZG-Customs/ZG-Customs/issues/11).                                                                                       |
 
 ## A.4 Pregled promjena u repozitoriju
 
-**Razdoblje pregleda:** 15. 10. – 16. 11. 2026.
+**Razdoblje pregleda:** 15. 10. – 20. 11. 2026.
 
+- [PR #95](https://github.com/ZG-Customs/ZG-Customs/pull/95) povezao je prijavu sa stranicama korisničkih uloga. [PR #96](https://github.com/ZG-Customs/ZG-Customs/pull/96) i [PR #97](https://github.com/ZG-Customs/ZG-Customs/pull/97) uveli su vlasnički API i sučelje za vozila. Rino je u [PR-u #98](https://github.com/ZG-Customs/ZG-Customs/pull/98) ažurirao obrasce uporabe, veze sa zahtjevima i evidenciju aktivnosti.
 - [GitHub Contributors — generirani graf doprinosa](https://github.com/ZG-Customs/ZG-Customs/graphs/contributors)
 - [Povijest promjena grane main](https://github.com/ZG-Customs/ZG-Customs/commits/main/)
 

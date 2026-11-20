@@ -41,7 +41,7 @@ U svim zaštićenim tijekovima poslužitelj provjerava aktivnost računa, ulogu 
 | Primarni akter        | Vlasnik vozila                                                                                  |
 | Preduvjeti            | Aktivan vlasnički račun.                                                                        |
 | Glavni uspješni tok   | Unosi registraciju, marku, model, godinu i kilometražu; pregledava ili uklanja vlastito vozilo. |
-| Alternative i iznimke | Tuđe vozilo nije dostupno; politiku uklanjanja uz postojeću povijest treba dovršiti.            |
+| Alternative i iznimke | Pristup tuđem vozilu se odbija. Arhiviranje čuva postojeće veze s rezervacijama.            |
 | Ishod                 | Vozilo je evidentirano ili uklonjeno iz aktivnog pregleda.                                      |
 
 ### UC-04: Rezervacija servisnog termina

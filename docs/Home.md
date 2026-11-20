@@ -2,15 +2,15 @@
 
 **Kolegij:** [Programsko inženjerstvo](https://www.fer.unizg.hr/predmet/proinz), Fakultet elektrotehnike i računarstva Sveučilišta u Zagrebu  
 **Akademska godina:** 2026./2027.<br>
-**Tim:** ZG Customs<br>
+**Tim:** G04.4 · ZG Customs<br>
 **Nastavnik:** Vlado Sruk  
-**Asistent / demonstrator:** [Ime i uloga u ovom izvođenju kolegija]
+**Asistentica:** Eda Jovičić
 
 ## Pregled projekta
 
 **Cilj:** Omogućiti čitatelju koji prvi put vidi projekt da u dvije ili tri rečenice prepozna aplikaciju, njezine ciljane korisnike i glavnu svrhu.
 
-[Opis projekta.]
+ZG Customs povezuje vlasnike vozila, servisere i voditelje autoservisa. Prvi ciklus obuhvaća prijavu, evidenciju vlastitih vozila te odobravanje autoservisa i članstva.
 
 <details>
 <summary><strong>Sažet pregled projekta</strong></summary>
@@ -43,15 +43,15 @@ Ažurirani popis članova, njihovih GitHub profila i glavnih uloga ili doprinosa
 
 | Kontrolna točka | Demonstracija | Video |
 | --- | --- | --- |
-| Iteracija 1 | [Poveznica na demonstraciju ili inačicu projekta] | [Poveznica na video Demo 1, ako je snimljen] |
+| Iteracija 1 | [Javna aplikacija](https://zgcustoms.duckdns.org) · [PDF dokumentacije M1](deliverables/PROINZ26_G04.4_ZGC_v1.pdf) | — |
 | Završni pregled | [Poveznica na završnu inačicu projekta] | [Poveznica na video završne demonstracije, ako je snimljen] |
 
 Dokumentacija se kontinuirano ažurira kako se aplikacija razvija.
 
 ## Organizacija projekta i razvojni proces
 
-**Način rada:** [Stvarni način rada i trajanje iteracije, ako je relevantno.]  
-**Praćenje trenutačnih zadataka i nedostataka:** [Poveznica na GitHub Issues ili stvarno korištenu ploču zadataka.]
+**Način rada:** Članovi razvijaju promjene na radnim granama i spajaju ih u `main` kroz pull requestove.<br>
+**Praćenje trenutačnih zadataka i nedostataka:** [GitHub Issues](https://github.com/ZG-Customs/ZG-Customs/issues).
 
 <details>
 <summary><strong>Opis načina rada tima</strong></summary>
@@ -91,13 +91,14 @@ Kratak sažetak: [README – Uporaba umjetne inteligencije](../README.md#ai-usag
 
 | Alat | Inačica ili model | Koristio/la | Glavna svrha |
 | --- | --- | --- | --- |
-| [Naziv alata] | [Inačica ili model, ako je poznat] | [Član/članovi tima] | [npr. izrada nacrta dokumentacije, generiranje izvora dijagrama] |
+| OpenAI Codex | — | Ivan Bartol | Priprema dokumentacije M1, ER dijagrama i PDF-a za predaju. |
 
 ### Opseg doprinosa umjetne inteligencije
 
 | Stranica, datoteka ili artefakt | Vrsta pomoći | Što je alat proizveo | Što je tim zadao i promijenio | Lokacija |
 | --- | --- | --- | --- | --- |
 | Analiza zahtjeva, revizija 30. 10. 2026. | Preoblikovanje i provjera sljedivosti uz OpenAI Codex | Prijedlog objedinjavanja 28 funkcijskih zahtjeva u 16, razrada kriterija i prioriteta te mapa starih i novih oznaka. | Ivan Bartol zadao je povratnu informaciju asistentice, traženi opseg revizije i očuvanje nastavnih primjera. Pregled tima tek slijedi. | [Analiza zahtjeva](2-Analiza-zahtjeva.md) |
+| Predaja M1, 20. 11. 2026. | Priprema PDF-a i ER dijagrama uz OpenAI Codex | Sažetak dokumentacije, prijelom i fizički prikaz baze iz migracija. | Ivan Bartol zadao je opseg predaje i oznaku tima. ER model uspoređen je sa shemom u PostgreSQL-u, a tvrdnje o ispitivanjima sa zapisima CI-ja i javne provjere. | [PDF M1](deliverables/PROINZ26_G04.4_ZGC_v1.pdf) · [Ispitivanje](5-Ispitivanje.md) |
 
 Ovaj popis još nije potpun. Ranija pomoć pri izradi dokumentacije i početne aplikacije navedena je u [sažetku README-a](../README.md#ai-usage); izostanak artefakta iz tablice ne znači da je izrađen bez pomoći umjetne inteligencije.
 
