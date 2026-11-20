@@ -32,7 +32,7 @@ Trajni red obavijesti u dijagramu predstavlja prijedlog transakcijskog outbox ob
 
 ### 4.3.1 ER dijagram i model podataka
 
-Implementirana je tablica `service_types`: `id` je primarni ključ, `code` jedinstven obvezni niz do 32 znaka, `name` obvezan niz do 100 znakova, a `description` do 500 znakova. [Početna migracija](../backend/src/main/resources/db/migration/V1__create_service_types.sql) unosi četiri kategorije. Zaseban projektni ER dijagram nije dostupan; dijagrami razreda u nastavku nisu prikaz implementirane relacijske sheme.
+Implementirana je tablica `service_types`: `id` je primarni ključ, `code` jedinstven obvezni niz do 32 znaka, `name` obvezan niz do 100 znakova, a `description` do 500 znakova. [Početna migracija](../backend/src/main/resources/db/migration/V1__create_service_types.sql) unosi četiri kategorije.
 
 ### 4.3.2 Reprezentativni UML dijagram razreda
 
@@ -70,15 +70,22 @@ Tijek razrađuje UC-04 i UC-13: unos rezervacije, provjeru vlasništva, odluku v
 
 UC-11 i UC-08 odvajaju prijedlog servisera od odluke vlasnika. Ponuda se može riješiti samo dok čeka odgovor. Odbijanje dodatnih radova nije automatsko otkazivanje osnovnog servisa.
 
-### 4.4.2 Reprezentativni UML dijagram stanja
+## 4.5 Zapisi arhitekturnih odluka
+
+Model životnog ciklusa razdvaja dogovor termina od izvođenja servisa. Sljedeće odluke proizlaze iz [PlantUML modela](./puml/4-5-zg-customs-booking-service-SM.puml) i opisuju planirano poslovno ponašanje.
+
+| Odluka | Razlog i posljedica |
+| --- | --- |
+| Rezervacija i servis imaju zasebne životne cikluse. | Zahtjev može biti odbijen ili otkazan prije radova. Servis nastaje tek prvom potvrdom rezervacije; ponovno prihvaćanje termina ne stvara drugi servis. |
+| Zamjenski termin zahtijeva odluku vlasnika. | Prijedlog voditelja prelazi u stanje čekanja; prihvaćanje potvrđuje rezervaciju, a odbijanje je otkazuje. |
+| Početak i završetak servisa imaju uvjete. | Dodijeljeni serviser započinje rad uz potvrđenu rezervaciju. Završetak zahtijeva unesene radove, vrijeme i konačni trošak. |
+| Ponuda dodatnih radova ima neovisno stanje. | Pending, Accepted i Rejected opisuju ponudu, a ne zamjenjuju stanja servisa Pending, InProgress i Done. |
+| Otkazivanje prije početka čuva zapis. | Model predviđa arhiviranje servisa u stanju Pending kada se rezervacija otkaže. Ne definira otkazivanje nakon početka radova. |
+| Promjene pokreću obavijesti. | Odluke i promjene termina pokreću obavijest; promjena statusa servisa uključuje komentar i e-poštu putem Resenda. Završetak omogućuje račun, povijest i ocjenjivanje. |
 
 ![Slika 4.6. Životni ciklusi rezervacije i servisa](./assets/diagrams/4-5-zg-customs-booking-service-SM.svg)
 
 **Slika 4.6. Životni ciklusi rezervacije i servisa** — [PlantUML izvor](./puml/4-5-zg-customs-booking-service-SM.puml).
-
-Rezervacija prolazi kroz zahtjev, eventualno čekanje odluke vlasnika i potvrdu, odbijanje ili otkazivanje. Servis ima stanja PENDING, IN_PROGRESS i DONE. Ponovno prihvaćanje termina ne stvara drugi servis. Nazivi u dijagramu stanja prikazni su ekvivalenti enum vrijednosti iz modela razreda. Povratni prijelazi i otkazivanje tijekom radova nisu konačno specificirani.
-
-## 4.5 Zapisi arhitekturnih odluka
 
 ## 4.6 Zajednička pravila oblikovanja (engl. Cross-cutting concerns)
 
@@ -94,7 +101,35 @@ Za planirane radnje vrijede poslužiteljska provjera uloge i vlasništva, valida
 
 **Slika 4.8. Predloženi upravljački API** — [PlantUML izvor](./puml/4-6-zg-customs-management-API.puml).
 
-Implementiran je `GET /api/service-types`; ostale poslovne rute predstavljaju prijedlog. Konačne JSON sheme i pravila filtriranja nisu definirani ovim dijagramima. Bilješka upravljačkog API-ja još navodi PENDING za autoservis, što je zastarjelo: čekanje se odnosi na WorkshopApplication.
+### Implementirane API rute
+
+Sljedeće rute definirane su u trenutačnom backend kodu. Popis potvrđuje implementaciju kontrolera, a ne provjeru javnog postavljanja.
+
+| Metoda i putanja | Implementacija |
+| --- | --- |
+| `GET /api/service-types` | [ServiceTypeController](../backend/src/main/java/hr/fer/zgcustoms/servicecatalog/ServiceTypeController.java) |
+| `GET /api/auth/provider` | [OnboardingController](../backend/src/main/java/hr/fer/zgcustoms/accounts/OnboardingController.java) |
+| `GET /api/auth/csrf` | [OnboardingController](../backend/src/main/java/hr/fer/zgcustoms/accounts/OnboardingController.java) |
+| `GET /api/me` | [OnboardingController](../backend/src/main/java/hr/fer/zgcustoms/accounts/OnboardingController.java) |
+| `PATCH /api/me` | [OnboardingController](../backend/src/main/java/hr/fer/zgcustoms/accounts/OnboardingController.java) |
+| `POST /api/auth/register` | [OnboardingController](../backend/src/main/java/hr/fer/zgcustoms/accounts/OnboardingController.java) |
+| `GET /api/workshops` | [OnboardingController](../backend/src/main/java/hr/fer/zgcustoms/accounts/OnboardingController.java) |
+| `POST /api/workshops/{id}/membership-requests` | [OnboardingController](../backend/src/main/java/hr/fer/zgcustoms/accounts/OnboardingController.java) |
+| `POST /api/workshop-applications` | [OnboardingController](../backend/src/main/java/hr/fer/zgcustoms/accounts/OnboardingController.java) |
+| `GET /api/onboarding/mine` | [OnboardingController](../backend/src/main/java/hr/fer/zgcustoms/accounts/OnboardingController.java) |
+| `GET /api/admin/workshop-applications` | [OnboardingController](../backend/src/main/java/hr/fer/zgcustoms/accounts/OnboardingController.java) |
+| `GET /api/workshops/{id}/membership-requests` | [OnboardingController](../backend/src/main/java/hr/fer/zgcustoms/accounts/OnboardingController.java) |
+| `GET /api/workshops/{id}/mechanics` | [OnboardingController](../backend/src/main/java/hr/fer/zgcustoms/accounts/OnboardingController.java) |
+| `POST /api/admin/workshop-applications/{id}/decision` | [OnboardingController](../backend/src/main/java/hr/fer/zgcustoms/accounts/OnboardingController.java) |
+| `POST /api/membership-requests/{id}/decision` | [OnboardingController](../backend/src/main/java/hr/fer/zgcustoms/accounts/OnboardingController.java) |
+| `DELETE /api/workshops/{id}/memberships/{membershipId}` | [OnboardingController](../backend/src/main/java/hr/fer/zgcustoms/accounts/OnboardingController.java) |
+| `GET /api/vehicles` | [VehicleController](../backend/src/main/java/hr/fer/zgcustoms/vehicles/VehicleController.java) |
+| `POST /api/vehicles` | [VehicleController](../backend/src/main/java/hr/fer/zgcustoms/vehicles/VehicleController.java) |
+| `DELETE /api/vehicles/{id}` | [VehicleController](../backend/src/main/java/hr/fer/zgcustoms/vehicles/VehicleController.java) |
+
+Spring Security dodatno obrađuje `GET /api/auth/login/external`, `GET /api/auth/callback/external` i `POST /api/auth/logout`. Prijava i callback dostupni su uz konfiguriran OAuth 2.0 / OpenID Connect klijent; odjava završava lokalnu sjednicu. Za izmjene podataka koristi se CSRF zaštita. [SecurityConfig](../backend/src/main/java/hr/fer/zgcustoms/accounts/SecurityConfig.java) definira ove rute i pravila pristupa.
+
+Vozila trenutačno podržavaju popis, unos i arhiviranje; ruta za uređivanje vozila nije implementirana. Rute za rezervacije, izvođenje servisa, dodatne ponude, račune, ocjene, statistiku, Resend i Stripe još nisu implementirane u pregledanim kontrolerima. Dijagrami API-ja prikazuju planirani opseg; stanje PENDING odnosi se na prijavu autoservisa, dok odobreni autoservis ima stanje ACTIVE.
 
 ## 4.7 Arhitekturni rizici i tehnički dug
 

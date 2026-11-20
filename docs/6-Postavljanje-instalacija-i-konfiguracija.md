@@ -1,23 +1,23 @@
 # 6. Postavljanje, instalacija i konfiguracija
 
-Ovo poglavlje opisuje stvarno postavljenu početnu inačicu sustava **ZG Customs**, provjerenu 27. 10. 2026. Javno je dostupna na [https://zgcustoms.duckdns.org](https://zgcustoms.duckdns.org). Frontend prikazuje četiri vrste servisa dohvaćene iz backenda i baze. Prijava korisnika i poslovne funkcionalnosti još nisu implementirane.
+Ovo poglavlje opisuje stvarno postavljenu početnu inačicu sustava **ZG Customs**, provjerenu 20. 11. 2026. Javno je dostupna na [https://zgcustoms.duckdns.org](https://zgcustoms.duckdns.org). Frontend prikazuje četiri vrste servisa dohvaćene iz backenda i baze. Prijava korisnika i poslovne funkcionalnosti još nisu implementirane.
 
 ## 6.1 Prikaz razmještaja
 
 Sustav se izvodi na jednoj Azure virtualnoj mašini s Ubuntuom 24.04 LTS i približno 4 GB RAM-a. Docker Compose upravlja trima containerima:
 
-| Dio | Izvršavanje i odgovornost | Komunikacija |
-| --- | --- | --- |
-| Korisnički preglednik | Izvršava izgrađeni React/TypeScript kod. | HTTPS prema `zgcustoms.duckdns.org:443`. |
-| `web` | Caddy poslužuje statičke datoteke iz `frontend/dist` i upravlja HTTPS-om. | Javni TCP 80/443; HTTP preusmjerava na HTTPS, a `/api/*` prosljeđuje na `backend:8080`. |
-| `backend` | Java 21 / Spring Boot 4.1.2 obrađuje zahtjeve i pokreće Flyway migracije. | HTTP u Docker mreži; JDBC prema `postgres:5432`. |
-| `postgres` | PostgreSQL 18.6 čuva aplikacijske podatke u trajnom volumeu. | Dostupan backendu u Docker mreži i administratoru kroz SSH tunel. |
+| Dio                   | Izvršavanje i odgovornost                                                 | Komunikacija                                                                            |
+| --------------------- | ------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| Korisnički preglednik | Izvršava izgrađeni React/TypeScript kod.                                  | HTTPS prema `zgcustoms.duckdns.org:443`.                                                |
+| `web`                 | Caddy poslužuje statičke datoteke iz `frontend/dist` i upravlja HTTPS-om. | Javni TCP 80/443; HTTP preusmjerava na HTTPS, a `/api/*` prosljeđuje na `backend:8080`. |
+| `backend`             | Java 21 / Spring Boot 4.1.2 obrađuje zahtjeve i pokreće Flyway migracije. | HTTP u Docker mreži; JDBC prema `postgres:5432`.                                        |
+| `postgres`            | PostgreSQL 18.6 čuva aplikacijske podatke u trajnom volumeu.              | Dostupan backendu u Docker mreži i administratoru kroz SSH tunel.                       |
 
 Na VM-u su portovi 8080 i 5432 vezani samo na `127.0.0.1`. Preglednik ne pristupa bazi izravno. Caddy javno blokira `/actuator` endpointove. Podaci baze i TLS certifikati ostaju u zasebnim Docker volumeima pri nadogradnji.
 
 Konfiguracija razmještaja nalazi se u [`compose.yaml`](../compose.yaml) i [`frontend/Caddyfile`](../frontend/Caddyfile). DuckDNS omogućuje naziv javne domene, a GitHub čuva izvorni kod i rezultate CI-ja. Planirane integracije prijave, Resenda i Stripea još nisu povezane s ovom inačicom.
 
-![Slika 6.1. Razmještaj sustava ZG Customs](<./assets/diagrams/6-1-zg-customs-DD.svg>)
+![Slika 6.1. Razmještaj sustava ZG Customs](./assets/diagrams/6-1-zg-customs-DD.svg)
 
 **Slika 6.1. Razmještaj sustava ZG Customs** — [PlantUML izvor](./puml/6-1-zg-customs-DD.puml).
 
@@ -33,16 +33,16 @@ Za rad izvan containera koriste se Java 21 i uključeni Maven Wrapper za backend
 
 [`scripts/init-env.sh`](../scripts/init-env.sh) stvara lokalnu `.env` s nasumičnim lozinkama i odbija prepisati postojeću datoteku. [`.env.example`](../.env.example) sadrži samo ogledne lokalne vrijednosti. Privatne vrijednosti za zajednički server čuva administrator izvan repozitorija.
 
-| Varijabla | Namjena |
-| --- | --- |
-| `POSTGRES_PASSWORD` | Tajna lozinka administratorskog PostgreSQL računa; postavlja se pri inicijalizaciji baze. |
-| `DB_PASSWORD` | Tajna lozinka aplikacijskog računa `zg_customs`; koriste je inicijalizacija baze i backend. |
-| `DB_PORT`, `API_PORT` | Lokalni portovi baze i backenda; zadano 5432 i 8080. |
-| `SITE_ADDRESS` | Caddy adresa; lokalno `:80`, na serveru `zgcustoms.duckdns.org`. |
-| `WEB_BIND` | Adresa za objavu web portova: lokalno `127.0.0.1`, javno `0.0.0.0`. |
-| `WEB_HTTP_PORT`, `WEB_HTTPS_PORT` | Web portovi: lokalno 8088/8443, na serveru 80/443. |
-| `DB_URL`, `DB_USER` | Backendova JDBC adresa i korisnik; Compose ih postavlja za internu Docker mrežu. Za razvoj iz IDE-a koriste se lokalna adresa i lokalni račun. |
-| `APP_VERSION` | Oznaka Docker imageova; skripta za objavu postavlja puni Git SHA. Lokalno je zadano `local`. |
+| Varijabla                         | Namjena                                                                                                                                        |
+| --------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| `POSTGRES_PASSWORD`               | Tajna lozinka administratorskog PostgreSQL računa; postavlja se pri inicijalizaciji baze.                                                      |
+| `DB_PASSWORD`                     | Tajna lozinka aplikacijskog računa `zg_customs`; koriste je inicijalizacija baze i backend.                                                    |
+| `DB_PORT`, `API_PORT`             | Lokalni portovi baze i backenda; zadano 5432 i 8080.                                                                                           |
+| `SITE_ADDRESS`                    | Caddy adresa; lokalno `:80`, na serveru `zgcustoms.duckdns.org`.                                                                               |
+| `WEB_BIND`                        | Adresa za objavu web portova: lokalno `127.0.0.1`, javno `0.0.0.0`.                                                                            |
+| `WEB_HTTP_PORT`, `WEB_HTTPS_PORT` | Web portovi: lokalno 8088/8443, na serveru 80/443.                                                                                             |
+| `DB_URL`, `DB_USER`               | Backendova JDBC adresa i korisnik; Compose ih postavlja za internu Docker mrežu. Za razvoj iz IDE-a koriste se lokalna adresa i lokalni račun. |
+| `APP_VERSION`                     | Oznaka Docker imageova; skripta za objavu postavlja puni Git SHA. Lokalno je zadano `local`.                                                   |
 
 Frontend poziva relativni `/api` na istom ishodištu. Nema zasebne varijable `VITE_API_BASE_URL` niti tajnih podataka baze u klijentskoj konfiguraciji.
 

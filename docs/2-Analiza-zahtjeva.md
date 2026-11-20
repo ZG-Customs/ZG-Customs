@@ -22,7 +22,7 @@ Glavni zahtjevi numerirani su redom od **F-001** do **F-016**, bez preskakanja b
 
 | ID | Opis | Prioritet | Izvor | Kriteriji prihvaćanja |
 | --- | --- | --- | --- | --- |
-| F-001 | Korisnik se registrira i prijavljuje putem vanjskog pružatelja identiteta uz OpenID Connect / OAuth 2.0. | Visok | Zadatak, str. 2; zahtjevi kolegija. | Uspješna vanjska prijava povezuje se s korisničkim računom u aplikaciji; ponovna prijava koristi isti račun. Neuspješna ili prekinuta prijava ne omogućuje zaštićene radnje. Pružatelja identiteta treba odabrati. |
+| F-001 | Korisnik se registrira i prijavljuje putem vanjskog pružatelja identiteta uz OpenID Connect / OAuth 2.0. | Visok | Zadatak, str. 2; zahtjevi kolegija. | Uspješna vanjska prijava povezuje se s korisničkim računom u aplikaciji; ponovna prijava koristi isti račun. Neuspješna ili prekinuta prijava ne omogućuje zaštićene radnje. Prijava koristi OAuth 2.0 uz OpenID Connect; vanjski identitet povezuje se s lokalnim računom parom issuer i subject. |
 | F-002 | Korisnik pri uspostavi profila navodi podatke potrebne za ulogu vlasnika vozila, servisera ili voditelja autoservisa. | Visok | Zadatak, str. 2. | Evidentira se uloga i pripadajući profil: vlasnik unosi osnovne osobne i kontaktne podatke; serviser ime, prezime, specijalizaciju i pripadnost autoservisu; voditelj podatke o autoservisu u kojem radi. Podaci se mogu ponovno pregledati. Obavezna polja i provjeru dodjele uloge treba dogovoriti; unos uloge sam po sebi ne smije zaobići NF-02. |
 | F-003 | Vlasnik unosi svoja vozila i pregledava njihove osnovne podatke. | Visok | Zadatak, str. 2. | Uz vlasnika se pohranjuju registarska oznaka, marka, model, godina proizvodnje i kilometraža svakog unesenog vozila. Nakon ponovnog otvaranja vlasnik vidi iste podatke o svojim vozilima. |
 | F-004 | Vlasnik traži termin za svoje vozilo i prati stanje servisnog zahtjeva. | Visok | Zadatak, str. 2. | Za odabrano vozilo pohranjuju se vrsta servisa i željeni termin; vlasnik može ponovno otvoriti zahtjev i vidjeti njegov trenutačni status. Primjeri vrsta su redovni servis, zamjena guma, popravak kočnica i dijagnostika. Primjeri statusa iz zadatka su zatražen, potvrđen, vozilo zaprimljeno, servis u tijeku, čeka odobrenje, završen i otkazan. Skup statusa, ovlasti za prijelaze i odabir autoservisa razrađuju se u 2.4. |
@@ -58,7 +58,7 @@ Nefunkcijski zahtjevi određuju svojstva kvalitete koja vrijede kroz više koris
 
 ## 2.3 Dionici i akteri
 
-Akteri izravno komuniciraju s aplikacijom. Projektni zadatak određuje četiri korisničke uloge te vanjske usluge prijave, e-pošte i kartične naplate. OAuth 2.0 je protokol, a ne naziv pružatelja identiteta; konkretan pružatelj još nije odabran. Stripe i Resend odabiri su tima.
+Akteri izravno komuniciraju s aplikacijom. Projektni zadatak određuje četiri korisničke uloge te vanjske usluge prijave, e-pošte i kartične naplate. Vanjska prijava koristi OAuth 2.0 uz OpenID Connect, slanje e-pošte Resend, a kartična naplata Stripe.
 
 | ID uloge ili aktera | Odnos prema sustavu | Relevantni zahtjevi |
 | --- | --- | --- |
@@ -66,7 +66,7 @@ Akteri izravno komuniciraju s aplikacijom. Projektni zadatak određuje četiri k
 | A-02 — Serviser | Prijavljuje se, navodi profil i autoservis, obrađuje dodijeljene servise i izrađuje ponude dodatnih radova. | F-001, F-002, F-006, F-007 |
 | A-03 — Voditelj autoservisa | Prijavljuje se, navodi autoservis, upravlja zaposlenicima i rasporedom te pregledava povijest i statistiku. | F-001, F-002, F-008, F-009, F-010, F-011 |
 | A-04 — Administrator platforme | Pristupa administraciji, upravlja korisnicima i autoservisima, deaktivira račune, određuje cijenu pretplate i pregledava korištenje platforme. | F-001, F-014, F-015, F-016 |
-| A-05 — Vanjski pružatelj identiteta | Sudjeluje u vanjskoj registraciji i prijavi; konkretan pružatelj još nije odabran. | F-001 |
+| A-05 — Vanjski pružatelj identiteta | Sudjeluje u vanjskoj registraciji i prijavi putem OAuth 2.0 uz OpenID Connect. | F-001 |
 | A-06 — Resend | Dostavlja e-mail obavijesti vlasnicima vozila. | F-005 |
 | A-07 — Stripe | Obrađuje kartičnu naplatu pretplata i aplikaciji vraća rezultat. | F-014 |
 | D-01 — Autoservis | Koristi platformu za organizaciju servisiranja i plaća pretplatu. Osobu ovlaštenu za plaćanje treba odrediti; sama organizacija nije korisnik koji se prijavljuje. | F-002, F-006, F-007, F-008, F-009, F-010, F-011, F-014 |
@@ -80,14 +80,14 @@ Nefunkcijski zahtjevi primjenjuju se na sve relevantne korisničke tijekove, a n
 | ID | Ograničenje | Izvor | Posljedica za realizaciju |
 | --- | --- | --- | --- |
 | C-01 | Rješenje je web-platforma. | Zadatak, str. 2. | Korisnički tijekovi dostupni su kroz preglednik; mobilni prikaz uređuje NF-01. |
-| C-02 | Registracija i prijava koriste vanjskog pružatelja identiteta uz OpenID Connect / OAuth 2.0. | Zadatak, str. 2; zahtjevi kolegija. | Za F-001 odabrati pružatelja i način povezivanja identiteta s lokalnim profilom i ovlastima. |
+| C-02 | Registracija i prijava koriste vanjskog pružatelja identiteta uz OpenID Connect / OAuth 2.0. | Zadatak, str. 2; zahtjevi kolegija. | Za F-001 konfigurirati OAuth 2.0 / OpenID Connect; issuer i subject povezuju identitet s lokalnim profilom i ovlastima. |
 | C-03 | Obavijesti vlasnicima šalju se preko vanjske usluge e-pošte; odabran je Resend. | Zadatak, str. 2; odabir pružatelja: tim. | F-005 provjerava stvarnu dostavu u ispitni sandučić, ne samo zapis obavijesti u bazi. |
 | C-04 | Korištenje platforme besplatno je za vlasnike vozila. | Zadatak, str. 2. | Funkcionalnosti vlasnika ne uvjetovati plaćanjem vlasničke pretplate. |
 | C-05 | Autoservisi plaćaju mjesečnu kartičnu pretplatu za napredne funkcionalnosti; odabran je Stripe. | Zadatak, str. 2; odabir pružatelja: tim. | Za F-014 odrediti prava pretplate, platitelja i obradu njezina stanja. To nije zahtjev za kartičnim plaćanjem pojedinog popravka. |
 
 **Otvorena pitanja za tim i asistenticu:**
 
-- **F-001, F-002, F-008, F-015:** koji se pružatelj identiteta koristi, koja su obavezna profilna polja, kako se provjeravaju uloge i pripadnost autoservisu te uspostavlja administrator? Koje radnje obuhvaća upravljanje zaposlenicima, korisnicima i autoservisima te kako utječu na aktivne prijave i otvorene zahtjeve?
+- **F-001, F-002, F-008, F-015:** koja su obavezna profilna polja, kako se provjeravaju uloge i pripadnost autoservisu te uspostavlja administrator? Koje radnje obuhvaća upravljanje zaposlenicima, korisnicima i autoservisima te kako utječu na aktivne prijave i otvorene zahtjeve?
 - **F-004, F-006, F-009:** kako vlasnik odabire autoservis, tko potvrđuje ili otkazuje termin, koji su dopušteni prijelazi statusa i kako se rješava preklapanje termina?
 - **F-005, F-007:** koje dodatne informacije pokreću e-poštu, što nakon neuspjele dostave i kako se servis nastavlja nakon odbijanja dodatnih radova?
 - **F-012, F-013:** koji su format i obavezan sadržaj računa i potvrde te ljestvica ocjenjivanja?
@@ -134,34 +134,37 @@ Tablica obuhvaća svih 28 starih zahtjeva, uključujući one koji nisu spajani n
 
 ## 2.6 Sljedivost zahtjeva
 
-Tablica povezuje aktualne zahtjeve s postojećim [zadacima prvog sastanka](meeting-notes/sprint-01.md), planiranim komponentama i budućim provjerama. Svaki od 16 funkcijskih zahtjeva ima vlastiti redak. Oznake AS označavaju zadatke, ne dodatne funkcijske zahtjeve; njihove postojeće oznake nisu mijenjane. Stvarni UC i ispitni ID-ovi dodat će se nakon razrade; tablica ne potvrđuje da su testovi već provedeni.
+Tablica povezuje aktualne zahtjeve s postojećim [zadacima prvog sastanka](meeting-notes/sprint-01.md), planiranim komponentama i budućim provjerama. Svaki od 16 funkcijskih zahtjeva ima vlastiti redak. Oznake AS označavaju zadatke, ne dodatne funkcijske zahtjeve; njihove postojeće oznake nisu mijenjane. UC oznake upućuju na poglavlje 3, a PT/IT/ST oznake na poglavlje 5. PT slučajevi su planirani; navedeni ispitni ID označava pokriveni dio zahtjeva, ne nužno cijeli zahtjev niti potvrdu uspješnog izvođenja.
 
-| ID zahtjeva | Povezani zadaci | Planirana realizacija | Ispitivanje / provjera |
-| --- | --- | --- | --- |
-| F-001 | AS04 | Modul korisnika; Spring Security; vanjski pružatelj identiteta; PostgreSQL | Uspješna, prekinuta i neuspješna prijava; povezivanje identiteta bez dupliciranja računa. |
-| F-002 | AS04, AS06 | React profili; modul korisnika i uloga; PostgreSQL | Obavezni podaci prema ulozi, specijalizacija i pripadnost autoservisu; ponovni pregled profila i provjera dodjele ovlasti. |
-| F-003 | AS07 | Sučelje vlasnika; modul vozila; PostgreSQL | Unos svih osnovnih podataka i ponovni dohvat vlastitih vozila. |
-| F-004 | AS05, AS09 | Sučelje vlasnika; modul servisnih zahtjeva; PostgreSQL | Zahtjev s vozilom, vrstom i terminom; prikaz promjena statusa i zabrana pristupa tuđem zahtjevu. |
-| F-005 | AS08 | Modul obavijesti; Resend | Točan primatelj, zahtjev i status u poruci; stvarna dostava; dogovoreno postupanje pri neuspjehu. |
-| F-006 (F-006.1–F-006.3) | AS06, AS10 | Sučelje servisera; moduli zahtjeva i radova; PostgreSQL | Pregled dodjele; spremanje i ponovno čitanje radova, dijelova, vremena i napomena; završetak s konačnim troškom. |
-| F-007 | AS15 | Sučelja servisera i vlasnika; modul ponuda; PostgreSQL | Ponuda s opisom i iznosom; prihvaćanje i odbijanje; pohrana odluke i njezin prikaz serviseru. |
-| F-008 | AS11 | Sučelje voditelja; modul zaposlenika autoservisa | Dogovorene radnje upravljanja zaposlenicima; zabrana upravljanja tuđim autoservisom. |
-| F-009 | AS12 | Sučelje voditelja; modul rasporeda i dodjele | Dodjela serviseru; izmjena termina; vidljivost dodjele i termina odgovarajućim korisnicima. |
-| F-010 | AS17, AS18 | Sučelja vlasnika i voditelja; servisna povijest; PostgreSQL | Potpunost povijesnog zapisa; vlasnik vidi svoja vozila, voditelj samo radove svojeg autoservisa. |
-| F-011 | AS21 | Sučelje voditelja; izračuni statistike | Tri pokazatelja iz zadatka uspoređena s očekivanim izračunima kontrolnih podataka. |
-| F-012 | AS17, AS19 | Sučelje vlasnika; modul servisnih dokumenata | Pregled detaljnog računa i preuzimanje potvrde; usklađenost troška s evidencijom; ovlasti. |
-| F-013 | AS20 | Sučelje vlasnika; modul ocjena | Pohrana ocjene i komentara; zabrana ocjenjivanja tuđeg ili nezavršenog servisa. |
-| F-014 | AS13, AS22 | Modul pretplata; Stripe; administratorsko određivanje cijene | Uspješna i neuspješna naplata; provjera izvora i ponovljene obrade Stripe obavijesti; dogovorena promjena cijene i prava pretplate. |
-| F-015 | AS16 | Administratorsko sučelje; modul korisnika i autoservisa | Dogovorene upravljačke radnje; deaktivacija i odbijanje zaštićenog pristupa; zabrana radnji drugim ulogama. |
-| F-016 | AS22 | Administratorski pregled korištenja | Dogovoreni pokazatelji u skladu s kontrolnim podacima. |
-| NF-01 | AS24 | Prilagodljivi React/CSS prikazi | Glavni tijekovi svih uloga na dogovorenim širinama prikaza. |
-| NF-02 | AS04, AS24 | Spring Security; provjere uloge, vlasništva i autoservisa | Neprijavljeni pristup, pogrešna uloga i izravni API zahtjevi za tuđe podatke. |
-| NF-03 | AS03, AS14, AS24 | Caddy i HTTPS; Docker Compose; Azure | Valjan certifikat i HTTP preusmjeravanje; izravni backend i baza nisu javno izloženi. |
-| NF-04 | AS24 | Validacija unosa i obrada pogrešaka u Reactu i Spring Bootu | Nevaljani unosi i nedostupne usluge bez lažne potvrde ili otkrivanja tajni. |
-| NF-05 | AS24 | Semantička polja i kontrole; vidljivi fokus | Izvođenje obrazaca tipkovnicom i razumljive tekstualne poruke. |
-| NF-06 | AS24 | Spring Boot transakcije; PostgreSQL ograničenja | Pogreška poništava povezane promjene; uspješno spremanje je cjelovito. |
-| NF-07 | AS03, AS24 | Kopije PostgreSQL-a i operativne skripte | Obnova zasebne ispitne baze i usporedba zapisa i veza. |
-| NF-08 | AS03, AS24 | Privatna konfiguracija; zaštita zapisnika | Zamjenske tajne nisu u Gitu, paketu preglednika ni zapisnicima. |
+| ID zahtjeva | Povezani zadaci | Obrasci uporabe | Ispitni ID | Planirana realizacija | Ispitivanje / provjera |
+| --- | --- | --- | --- | --- | --- |
+| F-001 | AS04 | UC-01 | PT-01 | Modul korisnika; Spring Security; vanjski pružatelj identiteta; PostgreSQL | Uspješna, prekinuta i neuspješna prijava; povezivanje identiteta bez dupliciranja računa. |
+| F-002 | AS04, AS06 | UC-01, UC-02, UC-09, UC-12 | PT-09 | React profili; modul korisnika i uloga; PostgreSQL | Obavezni podaci prema ulozi, specijalizacija i pripadnost autoservisu; ponovni pregled profila i provjera dodjele ovlasti. |
+| F-003 | AS07 | UC-03 | — | Sučelje vlasnika; modul vozila; PostgreSQL | Unos svih osnovnih podataka i ponovni dohvat vlastitih vozila. |
+| F-004 | AS05, AS09 | UC-04, UC-05, UC-22 | PT-02, PT-03 | Sučelje vlasnika; modul servisnih zahtjeva; PostgreSQL | Zahtjev s vozilom, vrstom i terminom; prikaz promjena statusa i zabrana pristupa tuđem zahtjevu. |
+| F-005 | AS08 | UC-05 | PT-05, PT-06 | Modul obavijesti; Resend | Točan primatelj, zahtjev i status u poruci; stvarna dostava; dogovoreno postupanje pri neuspjehu. |
+| F-006 (F-006.1–F-006.3) | AS06, AS10 | UC-10 | PT-04, PT-07 | Sučelje servisera; moduli zahtjeva i radova; PostgreSQL | Pregled dodjele; spremanje i ponovno čitanje radova, dijelova, vremena i napomena; završetak s konačnim troškom. |
+| F-007 | AS15 | UC-11, UC-08 | PT-05, PT-06 | Sučelja servisera i vlasnika; modul ponuda; PostgreSQL | Ponuda s opisom i iznosom; prihvaćanje i odbijanje; pohrana odluke i njezin prikaz serviseru. |
+| F-008 | AS11 | UC-09, UC-14 | PT-10 | Sučelje voditelja; modul zaposlenika autoservisa | Dogovorene radnje upravljanja zaposlenicima; zabrana upravljanja tuđim autoservisom. |
+| F-009 | AS12 | UC-13, UC-04 | PT-03, PT-04 | Sučelje voditelja; modul rasporeda i dodjele | Dodjela serviseru; izmjena termina; vidljivost dodjele i termina odgovarajućim korisnicima. |
+| F-010 | AS17, AS18 | UC-06 | PT-07 | Sučelja vlasnika i voditelja; servisna povijest; PostgreSQL | Potpunost povijesnog zapisa; vlasnik vidi svoja vozila, voditelj samo radove svojeg autoservisa. |
+| F-011 | AS21 | UC-15 | — | Sučelje voditelja; izračuni statistike | Tri pokazatelja iz zadatka uspoređena s očekivanim izračunima kontrolnih podataka. |
+| F-012 | AS17, AS19 | UC-06 | PT-07 | Sučelje vlasnika; modul servisnih dokumenata | Pregled detaljnog računa i preuzimanje potvrde; usklađenost troška s evidencijom; ovlasti. |
+| F-013 | AS20 | UC-07 | PT-08 | Sučelje vlasnika; modul ocjena | Pohrana ocjene i komentara; zabrana ocjenjivanja tuđeg ili nezavršenog servisa. |
+| F-014 | AS13, AS22 | UC-17, UC-20 | PT-11 | Modul pretplata; Stripe; administratorsko određivanje cijene | Uspješna i neuspješna naplata; provjera izvora i ponovljene obrade Stripe obavijesti; dogovorena promjena cijene i prava pretplate. |
+| F-015 | AS16 | UC-18, UC-19 | PT-09, PT-12 | Administratorsko sučelje; modul korisnika i autoservisa | Dogovorene upravljačke radnje; deaktivacija i odbijanje zaštićenog pristupa; zabrana radnji drugim ulogama. |
+| F-016 | AS22 | UC-21 | — | Administratorski pregled korištenja | Dogovoreni pokazatelji u skladu s kontrolnim podacima. |
+| NF-01 | AS24 | UC-01–UC-23 | — | Prilagodljivi React/CSS prikazi | Glavni tijekovi svih uloga na dogovorenim širinama prikaza. |
+| NF-02 | AS04, AS24 | UC-01–UC-23 | PT-02, PT-04, PT-09, PT-12 | Spring Security; provjere uloge, vlasništva i autoservisa | Neprijavljeni pristup, pogrešna uloga i izravni API zahtjevi za tuđe podatke. |
+| NF-03 | AS03, AS14, AS24 | UC-01–UC-23 | ST-01 (djelomično) | Caddy i HTTPS; Docker Compose; Azure | Valjan certifikat i HTTP preusmjeravanje; izravni backend i baza nisu javno izloženi. |
+| NF-04 | AS24 | UC-01–UC-23 | — | Validacija unosa i obrada pogrešaka u Reactu i Spring Bootu | Nevaljani unosi i nedostupne usluge bez lažne potvrde ili otkrivanja tajni. |
+| NF-05 | AS24 | UC-01–UC-23 | — | Semantička polja i kontrole; vidljivi fokus | Izvođenje obrazaca tipkovnicom i razumljive tekstualne poruke. |
+| NF-06 | AS24 | UC-01–UC-23 | — | Spring Boot transakcije; PostgreSQL ograničenja | Pogreška poništava povezane promjene; uspješno spremanje je cjelovito. |
+| NF-07 | AS03, AS24 | UC-01–UC-23 | — | Kopije PostgreSQL-a i operativne skripte | Obnova zasebne ispitne baze i usporedba zapisa i veza. |
+| NF-08 | AS03, AS24 | UC-01–UC-23 | IT-03 (djelomično) | Privatna konfiguracija; zaštita zapisnika | Zamjenske tajne nisu u Gitu, paketu preglednika ni zapisnicima. |
+
+
+**Oznaka —:** nije naveden zaseban ispitni ID za tu provjeru.
 
 ## 2.7 Pregled zahtjeva
 
@@ -172,4 +175,4 @@ Tablica povezuje aktualne zahtjeve s postojećim [zadacima prvog sastanka](meeti
 | Demo 2 | Dopuniti stvarnim nalazima nakon pregleda. | Nije evidentirano. |
 | Završni pregled | Dopuniti stvarnim nalazima nakon pregleda. | Nije evidentirano. |
 
-**Preostalo za dopunu:** razriješiti otvorena pitanja iz 2.4, uskladiti nove prioritete u planu zadataka te povezati zahtjeve sa stvarnim obrascima uporabe i ispitnim slučajevima. Dokument ne tvrdi da su svi zahtjevi ostvareni ili provjereni.
+**Preostalo za dopunu:** razriješiti otvorena pitanja iz 2.4, uskladiti nove prioritete u planu zadataka te dopuniti ispitne slučajeve za nepokrivene zahtjeve. Dokument ne tvrdi da su svi zahtjevi ostvareni ili provjereni.
