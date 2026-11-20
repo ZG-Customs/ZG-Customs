@@ -32,7 +32,19 @@ Trajni red obavijesti u dijagramu predstavlja prijedlog transakcijskog outbox ob
 
 ### 4.3.1 ER dijagram i model podataka
 
-Implementirana je tablica `service_types`: `id` je primarni ključ, `code` jedinstven obvezni niz do 32 znaka, `name` obvezan niz do 100 znakova, a `description` do 500 znakova. [Početna migracija](../backend/src/main/resources/db/migration/V1__create_service_types.sql) unosi četiri kategorije. Zaseban projektni ER dijagram nije dostupan; dijagrami razreda u nastavku nisu prikaz implementirane relacijske sheme.
+![ER dijagram PostgreSQL baze ZG Customs s 11 tablica i 14 veza stranih ključeva](./assets/diagrams/4-3-1-zg-customs-ER.svg)
+
+**Slika 4.3.1. Fizički model baze nakon migracija V1 i V2.** [Otvori cijeli dijagram](./assets/diagrams/4-3-1-zg-customs-ER.svg) · [PlantUML izvor](./puml/4-3-1-zg-customs-ER.puml)
+
+Svaki okvir predstavlja tablicu. Oznake `PK`, `FK` i `UQ` označavaju primarni ključ, strani ključ i jedinstven stupac. Dvije oznake `PK` u istoj tablici označavaju složeni primarni ključ. Zvjezdica označava obvezan stupac. Na krajevima veze kružić označava nulu, crtica jedan, a račva više zapisa.
+
+- **Identitet i uloga.** Kombinacija `users.oidc_issuer` i `users.oidc_subject` jedinstveno određuje vanjski identitet. Jedinstveni indeks na `user_roles.user_id` ograničava korisnika na najviše jednu dodijeljenu ulogu.
+- **Prijava autoservisa.** Korisnik može podnijeti više prijava, od kojih najviše jedna smije biti u stanju `PENDING`. Odobrenjem nastaje autoservis. Obvezni i jedinstveni `workshops.manager_id` povezuje ga s jednim voditeljem. Neobvezni i jedinstveni `workshops.application_id` dopušta i postojeće autoservise bez povezane prijave.
+- **Članstvo servisera.** Tablica `membership_requests` čuva zahtjeve i odluke. Djelomični jedinstveni indeks na `user_id` dopušta najviše jedan zahtjev u skupu stanja `PENDING` i `ACCEPTED` po korisniku. Tablica `workshop_memberships` čuva prihvaćena članstva, također uz najviše jedan autoservis po korisniku.
+- **Vozilo i rezervacija.** Svako vozilo pripada jednom vlasniku. Rezervacija povezuje vozilo s jednim autoservisom i jednom vrstom servisa te može imati više prijedloga zamjenskog termina. Arhiviranje vozila postavlja `archived_at` i čuva postojeće veze s rezervacijama.
+- **Katalog vrsta servisa.** Tablica `service_types` sadrži jedinstvenu šifru, naziv i opis. Početna migracija unosi redovni servis, zamjenu guma, popravak kočnica i dijagnostiku.
+
+Izvori sheme su [V1 – katalog vrsta servisa](../backend/src/main/resources/db/migration/V1__create_service_types.sql) i [V2 – računi, autoservisi, vozila i rezervacije](../backend/src/main/resources/db/migration/V2__baza.sql).
 
 ### 4.3.2 Reprezentativni UML dijagram razreda
 
