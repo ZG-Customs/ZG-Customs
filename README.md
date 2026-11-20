@@ -4,7 +4,7 @@
 
 ZG Customs razvija šesteročlani studentski tim u sklopu kolegija [Programsko inženjerstvo](https://www.fer.unizg.hr/predmet/proinz) na Fakultetu elektrotehnike i računarstva Sveučilišta u Zagrebu, u akademskoj godini **2026./2027.** Projekt se temelji na zadanoj temi **AutoServis**, autorice Ede Jovičić.
 
-> **Status projekta:** početna demonstracijska inačica. React stranica prikazuje vrste servisa iz Spring Boot backenda i PostgreSQL baze. Docker Compose i CI provjere pokrivaju frontend i backend. Ostale funkcionalnosti u nastavku predstavljaju planirani opseg.
+> **Prvi ciklus (M1).** Aplikacija podržava vanjsku prijavu, odobravanje autoservisa i članstva servisera te unos, pregled i arhiviranje vlastitih vozila. Javni katalog prikazuje četiri vrste servisa.
 
 ## Opis aplikacije
 
@@ -37,16 +37,16 @@ Detaljan opseg, zahtjevi, obrasci uporabe, arhitektura i rezultati ispitivanja v
 
 ## Postavljanje (deployment)
 
-**Status:** početna React stranica, backend i baza javno su postavljeni na Azure Ubuntu serveru preko Caddyja i HTTPS-a. Automatizacija svakih pet minuta provjerava `main` i objavljuje novu inačicu nakon uspješnog CI-ja. Javni pristup i aktivna inačica provjereni su **27. 10. 2026.**; [zapis provjere](docs/deployment.md#provjera-javnog-postavljanja--27-10-2026) navodi provjereni commit.
+**Javno postavljanje.** Aplikacija je dostupna preko HTTPS-a na Azureu. Javne provjere od 20. 11. 2026. i rezultat CI-ja za isti dan navedeni su u [operativnom zapisu](docs/deployment.md#provjera-m1).
 
 | Podatak | Trenutačno stanje |
 | --- | --- |
 | Domena | [zgcustoms.duckdns.org](https://zgcustoms.duckdns.org) |
 | Platforma za hosting | Microsoft Azure, Ubuntu 24.04 LTS i Docker Compose. |
-| Pristup demonstraciji | Javna naslovna stranica i popis vrsta servisa; korisnička prijava još nije implementirana. |
-| Ograničenja postavljene inačice | Naručivanje, radni nalozi i ostale poslovne funkcionalnosti još nisu implementirani. |
+| Pristup demonstraciji | Katalog je javan. Za evidenciju vozila prijavite se kao vlasnik preko vanjskog pružatelja identiteta. |
+| Ograničenja postavljene inačice | Rezervacije, radni nalozi, e-pošta i naplata pretplate planirani su za nastavak projekta. |
 
-**Planirani scenarij demonstracije:** vlasnik prijavljuje vozilo i traži termin, voditelj potvrđuje zahtjev i dodjeljuje servisera, a serviser evidentira radove. Vlasnik zatim prati status i pregledava završeni servis.
+**Demonstracija M1.** Prijavite se kao vlasnik, dodajte ogledno vozilo i osvježite stranicu. Zatim arhivirajte to vozilo i provjerite da je uklonjeno iz aktivnog popisa.
 
 Detalji infrastrukture, konfiguracije i objave opisani su u [vodiču za postavljanje, instalaciju i konfiguraciju](docs/6-Postavljanje-instalacija-i-konfiguracija.md).
 
@@ -102,7 +102,7 @@ Tim **ZG Customs** ima **6 članova**. U tablici se navodi primarni fokus rada, 
 | # | Ime i prezime | GitHub | Glavna uloga ili doprinos |
 | --- | --- | --- | --- |
 | 1 | Rino Bago | [@rinobagoFER](https://github.com/rinobagoFER) | Voditelj tima + full stack developer |
-| 2 | Ivan Bartol | [@slanacexe](https://github.com/slanacexe) | DevOps, Git, CI/CD, postavljanje aplikacije + full stack pripomoć |
+| 2 | Ivan Bartol | [@ivanbartol](https://github.com/ivanbartol) i [@slanacexe](https://github.com/slanacexe) | DevOps, Git, CI/CD, postavljanje aplikacije + full stack pripomoć |
 | 3 | Jagor Jureković | [@jj56894](https://github.com/jj56894) | Full stack developer + vanjske integracije i pretplate |
 | 4 | Potjeh Jureković | [@potjehjurekovic1](https://github.com/potjehjurekovic1) | Backend developer za servisne zahtjeve i poslovne procese autoservisa |
 | 5 | Marijan Smiljanić | [@msmilj](https://github.com/msmilj) | Frontend developer za sučelje autoservisa i zaposlenika |
@@ -123,7 +123,7 @@ Izravni push u `main` nije dopušten. Nove izmjene nakon odobrenja zahtijevaju p
 
 **Evidencija zadataka i sastanci:** **[DOPUNITI: ploča zadataka i ritam sastanaka; predložen je GitHub Issues]**.
 
-Projektna dokumentacija održava se u direktoriju [`docs/`](docs/), a PDF inačice službenih predaja pohranjivat će se u [`docs/deliverables/`](docs/deliverables/).
+Projektna dokumentacija održava se u direktoriju [`docs/`](docs/), a [PDF dokumentacije prvog ciklusa](docs/deliverables/PROINZ26_G04.4_ZGC_v1.pdf) nalazi se u `docs/deliverables/`.
 
 <a id="license"></a>
 

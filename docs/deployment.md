@@ -1,6 +1,6 @@
 # Razvojno okruženje i Azure server
 
-Ova inačica uspostavlja infrastrukturu: React / TypeScript / Vite, Caddy, Java 21 / Spring Boot 4.1.2, PostgreSQL 18.6 i Docker Compose. Početni frontend prikazuje četiri vrste servisa iz baze preko API-ja. Prijava, korisnici, vozila, naručivanje i vanjske integracije još nisu implementirani. [Upute za frontend i HTTPS](frontend.md) opisuju React razvoj i javnu domenu.
+Ova inačica uspostavlja infrastrukturu: React / TypeScript / Vite, Caddy, Java 21 / Spring Boot 4.1.2, PostgreSQL 18.6 i Docker Compose. M1 podržava katalog, vanjsku prijavu, račune, članstva i evidenciju vozila. Za prijavu treba postaviti [OIDC konfiguraciju](oidc.md). Rezervacije, slanje e-pošte i naplata pripadaju sljedećem ciklusu. [Upute za frontend i HTTPS](frontend.md) opisuju React razvoj i javnu domenu.
 
 ## Lokalno pokretanje
 
@@ -168,3 +168,11 @@ Provjera je provedena čitanjem stanja servera i javnim HTTP zahtjevima, bez nov
 - Privatna `.env` ima ovlasti `600`. Osobni Linux računi pet članova postoje bez `sudo` i Docker grupa. Osobni PostgreSQL računi još nisu dodijeljeni; postoje prijavni računi `postgres` i `zg_customs`.
 
 Pri početnom postavljanju prethodno su provjereni očuvanje probnog zapisa nakon ponovnog stvaranja PostgreSQL containera i obnova sigurnosne kopije u zasebnu testnu bazu. Te provjere nisu ponovno izvođene pri ovom usklađivanju dokumentacije. Ovaj zapis opisuje stanje na navedeni datum; buduće objave prate se kroz `state/current-sha` i zapise automatizacije.
+
+<a id="provjera-m1"></a>
+
+## Javna provjera M1 i rezultati CI-ja od 20. 11. 2026.
+
+- [HTTP provjera](../tests/deployment/smoke_web.py) na [javnoj adresi](https://zgcustoms.duckdns.org) prošla je preko HTTPS-a. Naslovnica je vratila 200, JavaScript paket bio je dostupan, katalog je sadržavao četiri vrste servisa, a javni `/actuator/health` vratio je 404. Na `/api/auth/provider` potvrđena je vrijednost `enabled: true`.
+- Na grani `main` za [reviziju df824b4](https://github.com/ZG-Customs/ZG-Customs/commit/df824b47d7d2c602d071623155a6a1bc93e06a06) prošli su [CI](https://github.com/ZG-Customs/ZG-Customs/actions/runs/44817288193) i [generiranje UML dijagrama](https://github.com/ZG-Customs/ZG-Customs/actions/runs/44817288245). CI je izvršio testove nad zasebnim PostgreSQL-om, izgradio spremnike i pokrenuo aplikaciju sa svježom bazom.
+- Javna provjera obuhvatila je anonimne zahtjeve. Dovršetak prijave stvarnim računom, točna revizija pokrenutih spremnika i obnova aktualne kopije baze zahtijevaju zasebnu provjeru.

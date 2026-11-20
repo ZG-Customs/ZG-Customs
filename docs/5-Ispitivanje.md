@@ -1,6 +1,6 @@
 # 5. Ispitivanje
 
-Ispitivanje početne inačice obuhvaća katalog usluga, pristup PostgreSQL-u, izolaciju dijagnostičkih ruta i automatizaciju postavljanja. Poslovni obrasci uporabe još nisu implementirani, pa se njihove provjere navode kao plan. Postojanje testa u repozitoriju nije dokaz njegova uspješnog izvođenja na trenutačnoj reviziji.
+Ispitivanje M1 obuhvaća katalog, vanjske identitete, uloge, članstva, vozila i postavljanje. Rezultati CI-ja i provjera javne adrese navedeni su u odjeljku 5.3.
 
 ## 5.1 Pristup ispitivanju
 
@@ -19,12 +19,14 @@ Ponovljivo lokalno pokretanje i priprema testne baze opisani su u [operativnom v
 | IT-01 | Pokrenuti backend nad migriranom testnom bazom; dohvatiti `/api/service-types` i broj redaka u bazi.  | HTTP 200, četiri zadane kategorije i potvrda PostgreSQL-a.                         | `catalogIsReadFromMigratedPostgresDatabase`                   |
 | IT-02 | Pokušati umetnuti kategoriju s postojećim kodom `REGULAR_SERVICE`.                                    | Baza odbija duplikat ograničenjem jedinstvenosti.                                  | `databaseRejectsDuplicateServiceCodes`                        |
 | IT-03 | Dohvatiti `/actuator/health/readiness` izravno na testnom backendu.                                   | HTTP 200 i UP bez lozinki, JDBC adrese ili detalja komponenti.                     | `readinessChecksDatabaseWithoutExposingDetails`               |
-| IT-04 | Poslati POST na katalog i dohvatiti `/actuator/env`.                                                  | HTTP 405 za nepodržano pisanje i 404 za nedostupnu konfiguracijsku rutu.           | `catalogDoesNotExposeUnauthenticatedWrites`                   |
+| IT-04 | Poslati POST na katalog i dohvatiti `/actuator/env`.                                                  | HTTP 405 za nepodržano pisanje i 401 za anonimni pristup konfiguraciji backenda.           | `catalogDoesNotExposeUnauthenticatedWrites`                   |
+| IT-05 | Ponoviti prijavu ispitnim identitetom, odbiti callback i provjeriti ovlasti pri registraciji i odobravanju članstva. | Ponavljanje povezuje isti račun, odbijeni callback ne otvara sjednicu, a promjene zahtijevaju odgovarajuće ovlasti. | [AccountAccessIntegrationTests](../backend/src/test/java/hr/fer/zgcustoms/AccountAccessIntegrationTests.java) |
+| IT-06 | Unijeti vlastito vozilo, dohvatiti popis i arhivirati vozilo s rezervacijom. Pokušati pristup drugim računom. | Vlasnik vidi svoje aktivne zapise, arhiva čuva vezu s rezervacijom, a tuđi je zapis zaštićen. | [VehicleIntegrationTests](../backend/src/test/java/hr/fer/zgcustoms/VehicleIntegrationTests.java) |
 | OP-01 | U testu odabira CI rezultata zadati uspješan push na main za točan commit te nepripadajuća izvođenja. | Samo odgovarajuće uspješno izvođenje dopušta postavljanje.                         | `test_accepts_only_successful_main_push_for_exact_commit`     |
 | OP-02 | Uz starije uspješno izvođenje zadati novije neuspješno ili nedovršeno ponovno izvođenje.              | Stari uspjeh ne dopušta postavljanje.                                              | `test_latest_failed_or_pending_rerun_blocks_previous_success` |
 | ST-01 | Pokrenuti `smoke_web.py` s osnovnim URL-om testnog Caddyja.                                           | Dostupni HTML, JavaScript i četiri kategorije; javni `/actuator/health` vraća 404. | [HTTP provjera](../tests/deployment/smoke_web.py)             |
 
-Oznake identificiraju specifikacije provjera, ne rezultate novog izvođenja. Java metode nalaze se u prethodno povezanom integracijskom testu, a Python metode u testu automatizacije.
+Oznake identificiraju specifikacije provjera, ne rezultate novog izvođenja. Java metode nalaze se u povezanim integracijskim klasama, a Python metode u testu automatizacije.
 
 ### Planirane provjere poslovnih tijekova
 
@@ -47,14 +49,16 @@ Za AS04-01 integracijska klasa `AccountAccessIntegrationTests` na PostgreSQL-u p
 
 ## 5.3 Provedena ispitivanja i rezultati
 
-[Zapis provjere javnog postavljanja od 10. 11. 2026.](deployment.md#provjera-javnog-postavljanja--27-10-2026) odnosi se na reviziju `a2f9eeb383e40c566f477db2d89f66f668d25080`. Prema tom zapisu sva tri spremnika bila su zdrava, naslovnica i katalog dostupni kroz HTTPS, HTTP preusmjeren na HTTPS, a javni Actuator endpoint vratio je 404. Provjereni su vezivanje internih portova na lokalno sučelje, instalirane skripte, cron i postojanje lokalne sigurnosne kopije.
+[Zapis provjere javnog postavljanja od 27. 10. 2026.](deployment.md#provjera-javnog-postavljanja--27-10-2026) odnosi se na reviziju `a2f9eeb383e40c566f477db2d89f66f668d25080`. Prema tom zapisu sva tri spremnika bila su zdrava, naslovnica i katalog dostupni kroz HTTPS, HTTP preusmjeren na HTTPS, a javni Actuator endpoint vratio je 404. Provjereni su vezivanje internih portova na lokalno sučelje, instalirane skripte, cron i postojanje lokalne sigurnosne kopije.
 
-Isti izvor bilježi raniju provjeru očuvanja podataka nakon ponovnog stvaranja spremnika te obnovu kopije u zasebnoj testnoj bazi; te provjere nisu ponovljene pri navedenom usklađivanju dokumentacije. Nema novog izvještaja o izvođenju svih testova na trenutačnoj radnoj kopiji, niti rezultata planiranih poslovnih scenarija.
+Isti izvor bilježi raniju provjeru očuvanja podataka nakon ponovnog stvaranja spremnika te obnovu kopije u zasebnoj testnoj bazi; te provjere nisu ponovljene pri navedenom usklađivanju dokumentacije.
+
+**20. 11. 2026.** [CI za df824b4](https://github.com/ZG-Customs/ZG-Customs/actions/runs/44817288193) uspješno je izvršio integracijske provjere IT-01–IT-06 nad PostgreSQL-om, izgradio aplikaciju i pokrenuo je sa svježom bazom. ST-01 je isti dan prošao i na javnoj adresi. [Operativni zapis](deployment.md#provjera-m1) navodi pojedinačne rezultate.
 
 ## 5.4 Poznati nedostaci i ograničenja ispitivanja
 
-- Početna inačica nema autentifikaciju ni poslovne operacije; HTTP 405 za katalog ne dokazuje ispravnost buduće autorizacije.
+- Integracijski testovi koriste ispitne OIDC identitete. Ručni prolaz PT-01 sa stvarnim računom kod pružatelja ostaje otvoren.
 - HTTP provjera ne potvrđuje izvođenje Reacta, dostupnost tipkovnicom ni prilagodljivost prikaza. Za te zahtjeve potrebne su zasebne provjere preglednika.
-- Dostava Resend poruka, Stripe naplata i provjera vanjskog identiteta nisu potvrđeni postojećim testovima.
+- Dostava e-pošte preko Resenda i naplata pretplate preko Stripea predviđene su za nastavak projekta.
 - Lokalna sigurnosna kopija ne štiti od gubitka cijelog servera; nisu dokumentirani rezultati oporavka s vanjske lokacije.
 - Politika brisanja, konflikt termina, definicija trajanja servisa i primjena novih cijena još nisu dovoljno određeni za konačne rubne ispitne slučajeve.

@@ -4,11 +4,11 @@
 
 ## 7.1 Rezultati projekta
 
-[Sažmite što korisnici mogu raditi u dovršenoj aplikaciji. Jasno razlikujte dovršene, djelomično ostvarene i neostvarene funkcionalnosti te opišite njihov učinak na korisnike. Tvrdnje temeljite na pokrenutoj aplikaciji i zabilježenim rezultatima ispitivanja.]
+U prvom ciklusu vlasnik može registrirati račun, dodati vozilo, ponovno otvoriti svoj popis i arhivirati vozilo. Voditelj podnosi prijavu autoservisa, administrator o njoj odlučuje, a serviser može zatražiti članstvo. [Rezultati od 20. 11. 2026.](5-Ispitivanje.md) obuhvaćaju ispitne identitete, vlasničke ovlasti i dostupnost javne aplikacije.
 
 ## 7.2 Izazovi i naučene lekcije
 
-[Opišite jedan ili dva značajna tehnička ili organizacijska izazova. Objasnite što se dogodilo, kako je tim reagirao i što je iz toga naučio. Navedite znanja ili vještine koje bi timu pomogle da problem ranije prepozna ili riješi. Navedite što biste u sličnom projektu sljedeći put napravili drugačije i zašto.]
+Brisanje vozila s postojećom rezervacijom ugrozilo bi povijest servisa. Tim je zato uveo arhiviranje. [Integracijski test](../backend/src/test/java/hr/fer/zgcustoms/VehicleIntegrationTests.java) provjerava oba učinka iste radnje: vozilo nestaje s aktivnog popisa, a veza s rezervacijom ostaje sačuvana.
 
 <details>
 <summary><strong>Primjer: obrada lokacije pri prijavi događaja</strong></summary>
@@ -21,7 +21,7 @@
 
 ## 7.3 Budući rad
 
-[Navedite mali broj opravdanih poboljšanja i ograničite se na nekoliko prioriteta. Razlikujte nedovršene funkcionalnosti potrebne za ispunjenje izvornog opsega od neobaveznih proširenja. Za svako ukratko objasnite korist i što bi trebalo promijeniti.]
+Sljedeći korisnički tijek povezuje zahtjev vlasnika za termin s odlukom voditelja i dodjelom servisera. Na potvrđeni termin nadovezuju se radni nalog, dodatne ponude i servisna povijest. Za Resend i Stripe planirane su odvojene provjere dostave i naplate. [Sljedivost zahtjeva](2-Analiza-zahtjeva.md#26-sljedivost-zahtjeva) navodi povezane zadatke i ispitne slučajeve.
 
 ---
 

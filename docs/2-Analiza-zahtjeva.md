@@ -138,9 +138,9 @@ Tablica povezuje aktualne zahtjeve s postojećim [zadacima prvog sastanka](meeti
 
 | ID zahtjeva | Povezani zadaci | Obrasci uporabe | Ispitni ID | Planirana realizacija | Ispitivanje / provjera |
 | --- | --- | --- | --- | --- | --- |
-| F-001 | AS04 | UC-01 | PT-01 | Modul korisnika; Spring Security; vanjski pružatelj identiteta; PostgreSQL | Uspješna, prekinuta i neuspješna prijava; povezivanje identiteta bez dupliciranja računa. |
+| F-001 | AS04 | UC-01 | IT-05, PT-01 | Modul korisnika; Spring Security; vanjski pružatelj identiteta; PostgreSQL | Uspješna, prekinuta i neuspješna prijava; povezivanje identiteta bez dupliciranja računa. |
 | F-002 | AS04, AS06 | UC-01, UC-02, UC-09, UC-12 | PT-09 | React profili; modul korisnika i uloga; PostgreSQL | Obavezni podaci prema ulozi, specijalizacija i pripadnost autoservisu; ponovni pregled profila i provjera dodjele ovlasti. |
-| F-003 | AS07 | UC-03 | — | Sučelje vlasnika; modul vozila; PostgreSQL | Unos svih osnovnih podataka i ponovni dohvat vlastitih vozila. |
+| F-003 | AS07 | UC-03 | IT-06 | Sučelje vlasnika; modul vozila; PostgreSQL | Unos svih osnovnih podataka i ponovni dohvat vlastitih vozila. |
 | F-004 | AS05, AS09 | UC-04, UC-05, UC-22 | PT-02, PT-03 | Sučelje vlasnika; modul servisnih zahtjeva; PostgreSQL | Zahtjev s vozilom, vrstom i terminom; prikaz promjena statusa i zabrana pristupa tuđem zahtjevu. |
 | F-005 | AS08 | UC-05 | PT-05, PT-06 | Modul obavijesti; Resend | Točan primatelj, zahtjev i status u poruci; stvarna dostava; dogovoreno postupanje pri neuspjehu. |
 | F-006 (F-006.1–F-006.3) | AS06, AS10 | UC-10 | PT-04, PT-07 | Sučelje servisera; moduli zahtjeva i radova; PostgreSQL | Pregled dodjele; spremanje i ponovno čitanje radova, dijelova, vremena i napomena; završetak s konačnim troškom. |
@@ -171,7 +171,7 @@ Tablica povezuje aktualne zahtjeve s postojećim [zadacima prvog sastanka](meeti
 | Kontrolna točka | Povratna informacija ili nalaz | Odluka o zahtjevu ili opsegu |
 | --- | --- | --- |
 | Radna revizija, 30. 10. 2026. | Prema informaciji člana tima, asistentica je upozorila na prevelik broj i preklapanje funkcijskih zahtjeva. Član tima zatražio je i realističniju raspodjelu prioriteta. | Pripremljen je prijedlog 16 glavnih zahtjeva, mape spajanja i novih prioriteta uz očuvan opseg. Potreban je pregled tima; ne tvrdi se da je asistentica odobrila pojedine nove formulacije. |
-| Iteracija 1 | Dopuniti stvarnim nalazima nakon pregleda. | Nije evidentirano. |
+| M1, 20. 11. 2026. | CI potvrđuje povezivanje ispitnog identiteta, kontrolu pristupa i arhiviranje vlastitog vozila uz očuvanje veze s rezervacijom. | F-001 i F-003 povezani su s [IT-05 i IT-06](5-Ispitivanje.md). Prijava kod stvarnog pružatelja zaseban je ručni scenarij PT-01. |
 | Demo 2 | Dopuniti stvarnim nalazima nakon pregleda. | Nije evidentirano. |
 | Završni pregled | Dopuniti stvarnim nalazima nakon pregleda. | Nije evidentirano. |
 
