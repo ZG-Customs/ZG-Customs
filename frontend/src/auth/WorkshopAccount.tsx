@@ -160,14 +160,14 @@ export function WorkshopAccount({ role, children }: {
   return (
     <section className="catalog account">
       {error && <p role="alert">{error}</p>}
-      {!pageAccount && !needsContact && enabled && (
+      {!account && enabled && (
         <a className="primary-button" href={LOGIN_URL} onClick={(event) => {
           event.preventDefault();
           beginLogin(role);
           window.location.assign(LOGIN_URL);
         }}>Prijava</a>
       )}
-      {!pageAccount && !needsContact && !enabled && !error && <p>Vanjska prijava trenutačno nije dostupna.</p>}
+      {!account && !enabled && !error && <p>Vanjska prijava trenutačno nije dostupna.</p>}
       {new URLSearchParams(window.location.search).get('login') === 'failed'
         && <p role="alert">Prijava nije uspjela. Provjerite koristite li račun za ovu stranicu.</p>}
       {account?.role && !pageAccount && <p>Za ovu stranicu prijavite se računom odgovarajuće uloge.</p>}
